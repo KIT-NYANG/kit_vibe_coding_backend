@@ -59,9 +59,9 @@ public class LectureList {
 
         if (progressPercent != null && progressPercent >= 100) {
             this.progressPercent = 100;
-            this.completedAt = LocalDateTime.now();
-        } else {
-            this.completedAt = null;
+            if (this.completedAt == null) {
+                this.completedAt = LocalDateTime.now(); // 한 번 완료되면 completedAt 유지
+            }
         }
     }
 

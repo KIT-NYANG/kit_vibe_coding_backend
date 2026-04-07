@@ -71,15 +71,36 @@ public class LectureListService {
         LectureList lectureList = lectureListRepository.findByLectureListIdAndIsDeletedFalse(lectureListId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_LIST_NOT_FOUND)); // 수강 목록 조회 실패 시
 
-        validateProgress(requestDto); // 진행도랑 시청 시간이 정상 범위인지 검사
+        validateWatchTime(requestDto.getWatchTimeSeconds()); // 시청 시간이 정상 범위인지 검사
+
+        Lecture lecture = lectureList.getLecture();
+        Integer durationSeconds = lecture.getDurationSeconds();
+
+        if (durationSeconds == null || durationSeconds <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_LECTURE_DURATION);
+        }
+
+        int requestedWatchTime = Math.min(requestDto.getWatchTimeSeconds(), durationSeconds); // 요청 시간이 영상 길이를 넘지 못하게 자름
+
+        int newProgressPercent = (int) (((double) requestedWatchTime / durationSeconds) * 100);
+
+        int currentWatchTime = lectureList.getWatchTimeSeconds() == null ? 0 : lectureList.getWatchTimeSeconds();
+        int currentProgress = lectureList.getProgressPercent() == null ? 0 : lectureList.getProgressPercent();
+
+        int finalWatchTime = Math.max(currentWatchTime, requestedWatchTime); // 기존보다 작은 값이면 유지
+        int finalProgressPercent = Math.max(currentProgress, newProgressPercent); // 기존보다 큰 값이면 갱신
 
         // 조회한 lecture_list 값 변경 (더티 체킹)
-        lectureList.updateProgress(
-                requestDto.getWatchTimeSeconds(),
-                requestDto.getProgressPercent()
-        );
+        lectureList.updateProgress(finalWatchTime, finalProgressPercent);
 
         return "수강 진행도 업데이트 완료";
+    }
+
+    // 시청 시간 유효성 검사
+    private void validateWatchTime(Integer watchTimeSeconds) {
+        if (watchTimeSeconds == null || watchTimeSeconds < 0) {
+            throw new BusinessException(ErrorCode.INVALID_WATCH_TIME);
+        }
     }
 
     // 수강 기록 삭제 메서드 (soft하게 구현했기 때문에 기록은 보존됨)
