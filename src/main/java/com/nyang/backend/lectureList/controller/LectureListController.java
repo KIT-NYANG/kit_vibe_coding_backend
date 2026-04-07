@@ -1,10 +1,12 @@
 package com.nyang.backend.lectureList.controller;
 
+import com.nyang.backend.global.response.ResponseDto;
 import com.nyang.backend.lectureList.dto.LectureEnrollmentRequestDto;
 import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
 import com.nyang.backend.lectureList.service.LectureListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,19 +20,30 @@ public class LectureListController {
 
     // 수강 신청 api
     @PostMapping
-    public ResponseEntity<String> enrollLecture(@RequestBody LectureEnrollmentRequestDto requestDto) {
-        return ResponseEntity.ok(lectureListService.enrollLecture(requestDto));
+    public ResponseEntity<ResponseDto<String>> enrollLecture(@RequestBody LectureEnrollmentRequestDto requestDto) {
+        String result = lectureListService.enrollLecture(requestDto);
+        return ResponseEntity.ok(ResponseDto.success(result));
     }
 
     // 수강 목록 조회 api
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<MyLectureListResponseDto>> getLectureLists(@PathVariable Long userId) {
-        return ResponseEntity.ok(lectureListService.getLectureLists(userId));
+    public ResponseEntity<ResponseDto<List<MyLectureListResponseDto>>> getLectureLists(@PathVariable Long userId) {
+        List<MyLectureListResponseDto> result = lectureListService.getLectureLists(userId);
+        return ResponseEntity.ok(ResponseDto.success(result));
+    }
+
+    // 수강 목록 조회 api
+    @GetMapping("/my")
+    public ResponseEntity<ResponseDto<List<MyLectureListResponseDto>>> getMyLectureLists(Authentication authentication) {
+        String userEmail = authentication.getName();
+        List<MyLectureListResponseDto> result = lectureListService.getMyLectureLists(userEmail);
+        return ResponseEntity.ok(ResponseDto.success(result));
     }
 
     // 수강 삭제 api
     @DeleteMapping("/{lectureListId}")
-    public ResponseEntity<String> deleteLectureList(@PathVariable Long lectureListId) {
-        return ResponseEntity.ok(lectureListService.deleteLectureList(lectureListId));
+    public ResponseEntity<ResponseDto<String>> deleteLectureList(@PathVariable Long lectureListId) {
+        String result = lectureListService.deleteLectureList(lectureListId);
+        return ResponseEntity.ok(ResponseDto.success(result));
     }
 }
