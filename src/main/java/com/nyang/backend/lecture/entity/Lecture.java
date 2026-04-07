@@ -1,5 +1,6 @@
 package com.nyang.backend.lecture.entity;
 
+import com.nyang.backend.lactureClass.entity.LectureClass;
 import com.nyang.backend.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,8 +23,9 @@ public class Lecture {
     @JoinColumn(name = "teacher_id", nullable = false)
     private Users teacher;
 
-    @Column(nullable = false, length = 50)
-    private String category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lecture_class_id")
+    private LectureClass lectureClass;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -41,11 +43,17 @@ public class Lecture {
     private Integer durationSeconds;
 
     @Column(nullable = false)
+    private Integer sequence;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
 
     public static Lecture create(
             Users teacher,
-            String category,
             String title,
             String description,
             Integer durationSeconds,
@@ -54,13 +62,30 @@ public class Lecture {
     ) {
         return Lecture.builder()
                 .teacher(teacher)
-                .category(category)
                 .title(title)
                 .description(description)
                 .videoPath(videoPath)
                 .thumbnailPath(thumbnailPath)
                 .durationSeconds(durationSeconds)
                 .createdAt(LocalDateTime.now())
+                .isDeleted(false)
                 .build();
+    }
+
+    // 독립적으로 업로드된 강의 영상을 특정 강좌에 연결하는 메서드
+    public void assignToLectureClass(LectureClass lectureClass, Integer sequence) {
+        this.lectureClass = lectureClass;
+        this.sequence = sequence;
+    }
+
+    // 이미 어떤 강좌에 연결돼 있던 영상을 강좌에서 remove하는 메서드
+    public void removeFromLectureClass() {
+        this.lectureClass = null;
+        this.sequence = null;
+    }
+
+    // 강의 영상도 soft del
+    public void softDelete() {
+        this.isDeleted = true;
     }
 }
