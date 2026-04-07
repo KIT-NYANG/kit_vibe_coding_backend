@@ -1,4 +1,4 @@
-package com.nyang.backend.lactureClass.entity;
+package com.nyang.backend.lectureClass.entity;
 
 import com.nyang.backend.user.entity.Users;
 import jakarta.persistence.*;

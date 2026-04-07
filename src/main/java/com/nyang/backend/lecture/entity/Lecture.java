@@ -1,6 +1,6 @@
 package com.nyang.backend.lecture.entity;
 
-import com.nyang.backend.lactureClass.entity.LectureClass;
+import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,7 +42,7 @@ public class Lecture {
     @Column(nullable = false)
     private Integer durationSeconds;
 
-    @Column(nullable = false)
+    @Column
     private Integer sequence;
 
     @Column(nullable = false)

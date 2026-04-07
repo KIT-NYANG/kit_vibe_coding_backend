@@ -7,11 +7,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LectureListResponseDto {
     private Long lectureListId;
-    private Long lectureId;
+    private Long lectureClassId;
     private String title;
-    private String thumbnail;
-    private Integer progressPercent;
-    private Integer watchTimeSeconds;
-    private LocalDateTime startedAt;
-    private LocalDateTime completedAt;
+    private String category;
+    private String description;
+    private String thumbnailPath;
+    private LocalDateTime createdAt;
 }

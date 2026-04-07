@@ -1,6 +1,6 @@
 package com.nyang.backend.lectureList.entity;
 
-import com.nyang.backend.lactureClass.entity.LectureClass;
+import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,7 +32,7 @@ public class LectureList {
     @JoinColumn(name = "lecture_class_id", nullable = false)
     private LectureClass lectureClass;
 
-    private LocalDateTime startedAt; // 수강 시작일
+    private LocalDateTime createdAt; // 수강 시작일
 
     @Column(nullable = false)
     @Builder.Default
@@ -42,7 +42,7 @@ public class LectureList {
         return LectureList.builder()
                 .users(users)
                 .lectureClass(lectureClass)
-                .startedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .isDeleted(false)
                 .build();
     }

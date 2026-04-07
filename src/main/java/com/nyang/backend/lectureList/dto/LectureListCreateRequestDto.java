@@ -8,5 +8,5 @@ import lombok.*;
 public class LectureListCreateRequestDto {
     // 수강 신청 요청 dto
     private Long userId;
-    private Long lectureId;
+    private Long lectureClassId;
 }
