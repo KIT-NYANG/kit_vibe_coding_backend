@@ -3,11 +3,10 @@ package com.nyang.backend.lectureList.service;
 import com.nyang.backend.global.exception.BusinessException;
 import com.nyang.backend.global.exception.ErrorCode;
 import com.nyang.backend.lectureClass.entity.LectureClass;
-import com.nyang.backend.lectureList.dto.LectureListCreateRequestDto;
-import com.nyang.backend.lectureList.dto.LectureListResponseDto;
+import com.nyang.backend.lectureList.dto.LectureEnrollmentRequestDto;
+import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
 import com.nyang.backend.lectureList.entity.LectureList;
 import com.nyang.backend.lectureList.repository.LectureListRepository;
-import com.nyang.backend.lecture.entity.Lecture;
 import com.nyang.backend.lectureClass.repository.LectureClassRepository;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
@@ -28,7 +27,7 @@ public class LectureListService {
 
     // 수강 신청 메서드
     @Transactional
-    public String enrollLecture(LectureListCreateRequestDto requestDto) {
+    public String enrollLecture(LectureEnrollmentRequestDto requestDto) {
         Users users = usersRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)); // 사용자 먼저 조회
 
@@ -55,7 +54,7 @@ public class LectureListService {
     }
 
     // 사용자의 수강 목록 조회
-    public List<LectureListResponseDto> getLectureLists(Long userId) {
+    public List<MyLectureListResponseDto> getLectureLists(Long userId) {
         if (!usersRepository.existsById(userId)) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }

@@ -1,7 +1,7 @@
 package com.nyang.backend.lectureList.controller;
 
-import com.nyang.backend.lectureList.dto.LectureListCreateRequestDto;
-import com.nyang.backend.lectureList.dto.LectureListResponseDto;
+import com.nyang.backend.lectureList.dto.LectureEnrollmentRequestDto;
+import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
 import com.nyang.backend.lectureList.service.LectureListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +18,13 @@ public class LectureListController {
 
     // 수강 신청 api
     @PostMapping
-    public ResponseEntity<String> enrollLecture(@RequestBody LectureListCreateRequestDto requestDto) {
+    public ResponseEntity<String> enrollLecture(@RequestBody LectureEnrollmentRequestDto requestDto) {
         return ResponseEntity.ok(lectureListService.enrollLecture(requestDto));
     }
 
     // 수강 목록 조회 api
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<LectureListResponseDto>> getLectureLists(@PathVariable Long userId) {
+    public ResponseEntity<List<MyLectureListResponseDto>> getLectureLists(@PathVariable Long userId) {
         return ResponseEntity.ok(lectureListService.getLectureLists(userId));
     }
 

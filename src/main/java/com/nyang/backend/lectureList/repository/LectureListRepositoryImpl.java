@@ -1,7 +1,7 @@
 package com.nyang.backend.lectureList.repository;
 
 import com.nyang.backend.lectureClass.entity.QLectureClass;
-import com.nyang.backend.lectureList.dto.LectureListResponseDto;
+import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
 import com.nyang.backend.lectureList.entity.QLectureList;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,14 +17,14 @@ public class LectureListRepositoryImpl implements LectureListRepositoryCustom {
     private final JPAQueryFactory queryFactory; // Querydsl 쿼리 만드는 도구
 
     @Override
-    public List<LectureListResponseDto> findLectureListsByUserId(Long userId) {
+    public List<MyLectureListResponseDto> findLectureListsByUserId(Long userId) {
         // Querydsl용 엔티티 메타객체
         QLectureList lectureList = QLectureList.lectureList;
         QLectureClass lectureClass = QLectureClass.lectureClass;
 
         return queryFactory
                 .select(Projections.constructor( // 조회 결과를 LectureListResponseDto에 담음
-                        LectureListResponseDto.class,
+                        MyLectureListResponseDto.class,
                         lectureList.lectureListId,
                         lectureClass.lectureClassId,
                         lectureClass.title,

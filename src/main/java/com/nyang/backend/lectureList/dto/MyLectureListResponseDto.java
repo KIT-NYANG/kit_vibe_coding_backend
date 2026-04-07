@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class LectureListResponseDto {
+public class MyLectureListResponseDto {
     private Long lectureListId;
     private Long lectureClassId;
     private String title;

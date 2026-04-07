@@ -1,6 +1,7 @@
 package com.nyang.backend.lectureClass.repository;
 
 import com.nyang.backend.lectureClass.entity.LectureClass;
+import com.nyang.backend.user.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,4 +14,10 @@ public interface LectureClassRepository extends JpaRepository<LectureClass, Long
 
     // 특정 강사가 등록한 강좌 목록 조회 - 아직 사용 안 합니다.
     List<LectureClass> findByTeacher_UserIdAndIsDeletedFalse(Long teacherId);
+
+    boolean existsByLectureClassIdAndIsDeletedFalse(Long lectureClassId);
+
+    List<LectureClass> findAllByIsDeletedFalseOrderByCreatedAtDesc();
+
+    List<LectureClass> findByTeacherAndIsDeletedFalseOrderByCreatedAtDesc(Users teacher);
 }

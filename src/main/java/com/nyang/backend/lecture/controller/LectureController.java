@@ -31,13 +31,6 @@ public class LectureController {
         return ResponseEntity.ok(ResponseDto.success(result));
     }
 
-    // 전체 강의 목록
-    @GetMapping
-    public ResponseEntity<ResponseDto<List<LectureListResponseDto>>> getAllLectures() {
-        List<LectureListResponseDto> result = lectureService.getAllLectures();
-        return ResponseEntity.ok(ResponseDto.success(result));
-    }
-
     // 강의 상세 조회
     @GetMapping("/{lectureId}")
     public ResponseEntity<ResponseDto<LectureResponseDto>> getLectureDetail(@PathVariable Long lectureId) {
