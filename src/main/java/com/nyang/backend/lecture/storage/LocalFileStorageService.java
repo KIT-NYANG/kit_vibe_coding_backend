@@ -1,5 +1,6 @@
 package com.nyang.backend.lecture.storage;
-
+import com.nyang.backend.global.exception.BusinessException;
+import com.nyang.backend.global.exception.ErrorCode;
 import com.nyang.backend.lecture.service.VideoMetadataService;
 import com.nyang.backend.lecture.dto.StoredVideoInfo;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class LocalFileStorageService implements FileStorageService {
     @Override
     public StoredVideoInfo saveVideo(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 비어 있습니다.");
+            throw new BusinessException(ErrorCode.VIDEO_FILE_REQUIRED);
         }
 
         try {
@@ -46,7 +47,7 @@ public class LocalFileStorageService implements FileStorageService {
             return new StoredVideoInfo(videoPath, durationSeconds);
 
         } catch (IOException e) {
-            throw new RuntimeException("영상 파일 저장 실패", e);
+            throw new BusinessException(ErrorCode.VIDEO_SAVE_FAILED);
         }
     }
 
@@ -68,7 +69,7 @@ public class LocalFileStorageService implements FileStorageService {
 
             return "/uploads/thumbnails/" + savedFilename;
         } catch (IOException e) {
-            throw new RuntimeException("썸네일 파일 저장 실패", e);
+            throw new BusinessException(ErrorCode.THUMBNAIL_SAVE_FAILED);
         }
     }
 
@@ -83,7 +84,7 @@ public class LocalFileStorageService implements FileStorageService {
             Path targetPath = Paths.get(uploadDir).resolve(relativePath).normalize();
             Files.deleteIfExists(targetPath);
         } catch (IOException e) {
-            throw new RuntimeException("파일 삭제 실패: " + filePath, e);
+            throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
         }
     }
 }

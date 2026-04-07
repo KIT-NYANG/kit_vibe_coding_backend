@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import com.nyang.backend.global.exception.BusinessException;
+import com.nyang.backend.global.exception.ErrorCode;
 
 @Service
 public class VideoMetadataService {
@@ -29,13 +31,13 @@ public class VideoMetadataService {
             int exitCode = process.waitFor();
 
             if (exitCode != 0 || line == null || line.isBlank()) {
-                throw new IllegalArgumentException("영상 길이를 추출할 수 없습니다.");
+                throw new BusinessException(ErrorCode.VIDEO_METADATA_EXTRACT_FAILED);
             }
 
             double duration = Double.parseDouble(line.trim());
             return (int) Math.ceil(duration);
         } catch (Exception e) {
-            throw new RuntimeException("영상 메타데이터 추출 실패", e);
+            throw new BusinessException(ErrorCode.VIDEO_METADATA_EXTRACT_FAILED);
         }
     }
 }

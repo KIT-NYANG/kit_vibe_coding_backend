@@ -24,8 +24,12 @@ public enum ErrorCode {
     ONLY_TEACHER_CAN_UPLOAD(403, "LECTURE002", "강의 업로드는 강사만 가능합니다."),
     ONLY_TEACHER_CAN_VIEW_OWN_LECTURES(403, "LECTURE003", "강사만 본인 강의를 조회할 수 있습니다."),
     ONLY_OWNER_CAN_DELETE_LECTURE(403, "LECTURE004", "본인이 업로드한 강의만 삭제할 수 있습니다."),
+    // 파일 관련
     VIDEO_FILE_REQUIRED(400, "LECTURE005", "영상 파일은 필수입니다."),
-
+    VIDEO_METADATA_EXTRACT_FAILED(500, "LECTURE006", "영상 메타데이터 추출에 실패했습니다."),
+    THUMBNAIL_SAVE_FAILED(500, "LECTURE007", "썸네일 저장에 실패했습니다."),
+    VIDEO_SAVE_FAILED(500, "LECTURE008", "영상 저장에 실패했습니다."),
+    FILE_DELETE_FAILED(500, "LECTURE009", "파일 삭제에 실패했습니다."),
 
     // 요청값 관련
     INVALID_INPUT_VALUE(400, "COMMON002", "입력값이 올바르지 않습니다."),
