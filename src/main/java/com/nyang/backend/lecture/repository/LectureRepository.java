@@ -12,5 +12,5 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     List<Lecture> findAllByIsDeletedFalseOrderByCreatedAtDesc();
     List<Lecture> findByTeacherAndIsDeletedFalseOrderByCreatedAtDesc(Users teacher);
     Optional<Lecture> findByLectureIdAndIsDeletedFalse(Long lectureId);
-    List<Lecture> findByLectureClassAndIsDeletedFalseOrderBySequenceAscCreatedAtAsc(LectureClass lectureClass);
+    List<Lecture> findByLectureClassAndIsDeletedFalseOrderByCreatedAtAsc(LectureClass lectureClass);
 }

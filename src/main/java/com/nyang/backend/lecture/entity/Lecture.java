@@ -42,9 +42,6 @@ public class Lecture {
     @Column(nullable = false)
     private Integer durationSeconds;
 
-    @Column
-    private Integer sequence;
-
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -56,6 +53,7 @@ public class Lecture {
             Users teacher,
             String title,
             String description,
+            LectureClass lectureClass,
             Integer durationSeconds,
             String videoPath,
             String thumbnailPath
@@ -64,24 +62,13 @@ public class Lecture {
                 .teacher(teacher)
                 .title(title)
                 .description(description)
+                .lectureClass(lectureClass)
                 .videoPath(videoPath)
                 .thumbnailPath(thumbnailPath)
                 .durationSeconds(durationSeconds)
                 .createdAt(LocalDateTime.now())
                 .isDeleted(false)
                 .build();
-    }
-
-    // 독립적으로 업로드된 강의 영상을 특정 강좌에 연결하는 메서드
-    public void assignToLectureClass(LectureClass lectureClass, Integer sequence) {
-        this.lectureClass = lectureClass;
-        this.sequence = sequence;
-    }
-
-    // 이미 어떤 강좌에 연결돼 있던 영상을 강좌에서 remove하는 메서드
-    public void removeFromLectureClass() {
-        this.lectureClass = null;
-        this.sequence = null;
     }
 
     // 강의 영상도 soft del

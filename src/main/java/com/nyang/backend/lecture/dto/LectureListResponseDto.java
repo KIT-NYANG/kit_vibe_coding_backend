@@ -13,11 +13,9 @@ public class LectureListResponseDto {
     private Long lectureId;
     private String teacherName;
     private Long lectureClassId;
-    private String category;
     private String title;
     private String thumbnailUrl;
     private Integer durationSeconds;
-    private Integer sequence;
     private LocalDateTime createdAt;
 
     public static LectureListResponseDto from(Lecture lecture) {
@@ -29,14 +27,9 @@ public class LectureListResponseDto {
                                 ? lecture.getLectureClass().getLectureClassId()
                                 : null
                 )
-                .category(lecture.getLectureClass() != null
-                        ? lecture.getLectureClass().getCategory()
-                        : null
-                )
                 .title(lecture.getTitle())
                 .thumbnailUrl(lecture.getThumbnailPath())
                 .durationSeconds(lecture.getDurationSeconds())
-                .sequence(lecture.getSequence())
                 .createdAt(lecture.getCreatedAt())
                 .build();
     }
