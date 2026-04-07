@@ -17,6 +17,7 @@ public enum ErrorCode {
     // 회원 관련
     USER_NOT_FOUND(404, "USER001", "회원이 존재하지 않습니다."),
     EMAIL_DUPLICATED(400, "EMAIL001", "이메일이 이미 존재합니다."),
+    PASSWORD_MISMATCH(400, "USER002", "비밀번호와 비밀번호 확인이 일치하지 않습니다."),
 
     // 요청값 관련
     INVALID_INPUT_VALUE(400, "COMMON002", "입력값이 올바르지 않습니다."),

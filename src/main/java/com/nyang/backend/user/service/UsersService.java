@@ -33,6 +33,11 @@ public class UsersService {
             throw new BusinessException(ErrorCode.EMAIL_DUPLICATED);
         }
 
+        // 비밀번호 확인 검사
+        if (!requestDto.getPassword().equals(requestDto.getPasswordConfirm())) {
+            throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
         Users users = Users.builder()
                 .email(requestDto.getEmail())
                 .password(passwordEncoder.encode(requestDto.getPassword())) // 암호화해서 저장
