@@ -9,6 +9,7 @@ import com.nyang.backend.lecture.entity.Lecture;
 import com.nyang.backend.lecture.repository.LectureRepository;
 import com.nyang.backend.lecture.storage.FileStorageService;
 import com.nyang.backend.lecture.dto.StoredVideoInfo;
+import com.nyang.backend.lectureClass.repository.LectureClassRepository;
 import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
@@ -24,6 +25,7 @@ import java.util.List;
 public class LectureServiceImpl implements LectureService {
 
     private final LectureRepository lectureRepository;
+    private final LectureClassRepository lectureClassRepository;
     private final UsersRepository usersRepository;
     private final FileStorageService fileStorageService;
 
@@ -46,7 +48,6 @@ public class LectureServiceImpl implements LectureService {
 
         Lecture lecture = Lecture.create(
                 teacher,
-                requestDto.getCategory(),
                 requestDto.getTitle(),
                 requestDto.getDescription(),
                 videoInfo.getDurationSeconds(),
@@ -60,7 +61,7 @@ public class LectureServiceImpl implements LectureService {
 
     @Override
     public List<LectureListResponseDto> getAllLectures() {
-        return lectureRepository.findAllByOrderByCreatedAtDesc()
+        return lectureRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc()
                 .stream()
                 .map(LectureListResponseDto::from)
                 .toList();
@@ -68,7 +69,7 @@ public class LectureServiceImpl implements LectureService {
 
     @Override
     public LectureResponseDto getLectureDetail(Long lectureId) {
-        Lecture lecture = lectureRepository.findById(lectureId)
+        Lecture lecture = lectureRepository.findByLectureIdAndIsDeletedFalse(lectureId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
 
         return LectureResponseDto.from(lecture);
@@ -83,7 +84,7 @@ public class LectureServiceImpl implements LectureService {
             throw new BusinessException(ErrorCode.ONLY_TEACHER_CAN_VIEW_OWN_LECTURES);
         }
 
-        return lectureRepository.findByTeacherOrderByCreatedAtDesc(teacher)
+        return lectureRepository.findByTeacherAndIsDeletedFalseOrderByCreatedAtDesc(teacher)
                 .stream()
                 .map(LectureListResponseDto::from)
                 .toList();
@@ -95,7 +96,7 @@ public class LectureServiceImpl implements LectureService {
         Users teacher = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        Lecture lecture = lectureRepository.findById(lectureId)
+        Lecture lecture = lectureRepository.findByLectureIdAndIsDeletedFalse(lectureId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
 
         if (!lecture.getTeacher().getUserId().equals(teacher.getUserId())) {

@@ -19,6 +19,9 @@ public enum ErrorCode {
     EMAIL_DUPLICATED(400, "EMAIL001", "이메일이 이미 존재합니다."),
     PASSWORD_MISMATCH(400, "USER002", "비밀번호와 비밀번호 확인이 일치하지 않습니다."),
 
+    // 강좌 관련
+    LECTURE_CLASS_NOT_FOUND(404, "LECTURE_CLASS001", "강좌를 찾을 수 없습니다."),
+
     // 강의 관련
     LECTURE_NOT_FOUND(404, "LECTURE001", "강의를 찾을 수 없습니다."),
     ONLY_TEACHER_CAN_UPLOAD(403, "LECTURE002", "강의 업로드는 강사만 가능합니다."),
@@ -40,7 +43,6 @@ public enum ErrorCode {
     // 수강 목록 CRUD 관련
     LECTURE_LIST_NOT_FOUND(404, "LECTURE_LIST001", "존재하지 않는 수강 기록입니다."),
     LECTURE_ALREADY_ENROLLED(409, "LECTURE_LIST002", "이미 수강 신청한 강의입니다."),
-    INVALID_PROGRESS(400, "LECTURE_LIST003", "진행도는 0 이상 100 이하만 가능합니다."),
     INVALID_WATCH_TIME(400, "LECTURE_LIST004", "시청 시간은 0 이상이어야 합니다."),
     INVALID_LECTURE_DURATION(400, "LECTURE_LIST005", "강의 영상 길이가 올바르지 않습니다.");
 

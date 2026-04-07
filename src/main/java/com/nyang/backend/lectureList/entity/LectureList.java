@@ -1,7 +1,7 @@
 package com.nyang.backend.lectureList.entity;
 
+import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.user.entity.Users;
-import com.nyang.backend.lecture.entity.Lecture;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "lecture_list",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "lecture_id"})
+                @UniqueConstraint(columnNames = {"user_id", "lecture_class_id"})
         }
 )
 @Getter
@@ -29,40 +29,22 @@ public class LectureList {
     private Users users;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lecture_id", nullable = false)
-    private Lecture lecture;
+    @JoinColumn(name = "lecture_class_id", nullable = false)
+    private LectureClass lectureClass;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer watchTimeSeconds = 0; // 강의 시청 시간
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer progressPercent = 0; // 수강 진행도
-
-    private LocalDateTime startedAt; // 수강 시작일
-
-    private LocalDateTime completedAt; // 수강 완료일
+    private LocalDateTime createdAt; // 수강 시작일
 
     @Column(nullable = false)
     @Builder.Default
     private Boolean isDeleted = false; // 수강 삭제 여부
 
-    // 진행도 업데이트 메서드 (진행도가 변경될 때의 규칙을 Service에 두면 비대해지기 때문에 상태 변경 책임을 엔티티가 가지게 함)
-    public void updateProgress(Integer watchTimeSeconds, Integer progressPercent) {
-        this.watchTimeSeconds = watchTimeSeconds;
-        this.progressPercent = progressPercent;
-
-        if (this.startedAt == null && watchTimeSeconds != null && watchTimeSeconds > 0) {
-            this.startedAt = LocalDateTime.now();
-        }
-
-        if (progressPercent != null && progressPercent >= 100) {
-            this.progressPercent = 100;
-            if (this.completedAt == null) {
-                this.completedAt = LocalDateTime.now(); // 한 번 완료되면 completedAt 유지
-            }
-        }
+    public static LectureList create(Users users, LectureClass lectureClass) {
+        return LectureList.builder()
+                .users(users)
+                .lectureClass(lectureClass)
+                .createdAt(LocalDateTime.now())
+                .isDeleted(false)
+                .build();
     }
 
     // 삭제는 soft하게 (수강 기록 보존)

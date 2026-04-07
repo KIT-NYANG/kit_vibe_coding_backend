@@ -48,7 +48,10 @@ public class SecurityConfig {
                                     "/v3/api-docs/**",
                                     "/uploads/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/lectures","/api/lectures/*").permitAll() //강의 목록 조회는 열어둠
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/lectures","/api/lectures/*",
+                                "/api/lecture-class", "/api/lecture-class/*",
+                                "/api/lecture-list", "/api/lecture-list/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
