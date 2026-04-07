@@ -113,17 +113,4 @@ public class LectureListService {
         return "수강 기록 삭제 완료";
     }
 
-    // 유효성 검사 (유효한 값으로 변경되는지 확인)
-    private void validateProgress(LectureProgressUpdateRequestDto requestDto) {
-        if (requestDto.getProgressPercent() == null
-                || requestDto.getProgressPercent() < 0
-                || requestDto.getProgressPercent() > 100) {
-            throw new BusinessException(ErrorCode.INVALID_PROGRESS);
-        }
-
-        if (requestDto.getWatchTimeSeconds() == null
-                || requestDto.getWatchTimeSeconds() < 0) {
-            throw new BusinessException(ErrorCode.INVALID_WATCH_TIME);
-        }
-    }
 }
