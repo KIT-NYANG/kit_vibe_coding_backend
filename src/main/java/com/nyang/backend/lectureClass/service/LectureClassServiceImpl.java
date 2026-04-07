@@ -89,7 +89,7 @@ public class LectureClassServiceImpl implements LectureClassService {
         LectureClass lectureClass = lectureClassRepository.findByLectureClassIdAndIsDeletedFalse(lectureClassId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_CLASS_NOT_FOUND));
 
-        return lectureRepository.findByLectureClassAndIsDeletedFalseOrderBySequenceAscCreatedAtAsc(lectureClass)
+        return lectureRepository.findByLectureClassAndIsDeletedFalseOrderByCreatedAtAsc(lectureClass)
                 .stream()
                 .map(LectureListResponseDto::from)
                 .toList();

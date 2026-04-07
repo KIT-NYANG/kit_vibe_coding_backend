@@ -7,8 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class LectureCreateRequestDto {
-
-    private String category;
+    private Long lectureClassId;
     private String title;
     private String description;
     private MultipartFile videoFile;
