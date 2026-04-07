@@ -8,10 +8,7 @@ import com.nyang.backend.user.service.UsersService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -20,16 +17,23 @@ public class UsersController {
 
     private final UsersService usersService;
 
+    // 로그인 api
     @PostMapping("/login")
     public ResponseEntity<ResponseDto<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto requestDto) {
         LoginResponseDto result = usersService.login(requestDto);
         return ResponseEntity.ok(ResponseDto.success(result));
     }
 
+    // 회원가입 api
     @PostMapping("/signup")
     public ResponseEntity<ResponseDto<String>> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         String result = usersService.signup(requestDto);
         return ResponseEntity.ok(ResponseDto.success(result));
     }
 
+    // 이메일 중복 확인 api
+    @GetMapping("/check-email")
+    public ResponseDto<String> checkEmailDuplicate(@RequestParam String email) {
+        return ResponseDto.success(usersService.checkEmailDuplicate(email));
+    }
 }

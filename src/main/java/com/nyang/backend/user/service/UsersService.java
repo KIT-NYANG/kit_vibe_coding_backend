@@ -46,6 +46,15 @@ public class UsersService {
         return "회원가입 성공";
     }
 
+    // 이메일 중복 검사 메서드 분리
+    @Transactional
+    public String checkEmailDuplicate(String email) {
+        if (usersRepository.existsByEmail(email)) {
+            throw new BusinessException(ErrorCode.EMAIL_DUPLICATED);
+        }
+        return "사용 가능한 이메일입니다.";
+    }
+
     public LoginResponseDto login(LoginRequestDto requestDto) {
         try {
             authenticationManager.authenticate(
