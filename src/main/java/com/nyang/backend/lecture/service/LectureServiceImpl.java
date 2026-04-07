@@ -1,5 +1,7 @@
 package com.nyang.backend.lecture.service;
 
+import com.nyang.backend.global.exception.BusinessException;
+import com.nyang.backend.global.exception.ErrorCode;
 import com.nyang.backend.lecture.dto.LectureCreateRequestDto;
 import com.nyang.backend.lecture.dto.LectureListResponseDto;
 import com.nyang.backend.lecture.dto.LectureResponseDto;
@@ -28,26 +30,23 @@ public class LectureServiceImpl implements LectureService {
     @Transactional
     public LectureResponseDto createLecture(String userEmail, LectureCreateRequestDto requestDto) {
         Users teacher = usersRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         if (teacher.getRole() != Role.TEACHER) {
-            throw new IllegalArgumentException("강의 업로드는 강사만 가능합니다.");
+            throw new BusinessException(ErrorCode.ONLY_TEACHER_CAN_UPLOAD);
         }
 
         if (requestDto.getVideoFile() == null || requestDto.getVideoFile().isEmpty()) {
-            throw new IllegalArgumentException("영상 파일은 필수입니다.");
+            throw new BusinessException(ErrorCode.VIDEO_FILE_REQUIRED);
         }
-
-        String videoPath = fileStorageService.saveVideo(requestDto.getVideoFile());
-        String thumbnailPath = fileStorageService.saveThumbnail(requestDto.getThumbnailFile());
 
         Lecture lecture = Lecture.create(
                 teacher,
                 requestDto.getCategory(),
                 requestDto.getTitle(),
                 requestDto.getDescription(),
-                videoPath,
-                thumbnailPath
+                fileStorageService.saveVideo(requestDto.getVideoFile()),
+                fileStorageService.saveThumbnail(requestDto.getThumbnailFile())
         );
 
         Lecture savedLecture = lectureRepository.save(lecture);
@@ -65,7 +64,7 @@ public class LectureServiceImpl implements LectureService {
     @Override
     public LectureResponseDto getLectureDetail(Long lectureId) {
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
 
         return LectureResponseDto.from(lecture);
     }
@@ -73,10 +72,10 @@ public class LectureServiceImpl implements LectureService {
     @Override
     public List<LectureListResponseDto> getMyLectures(String userEmail) {
         Users teacher = usersRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         if (teacher.getRole() != Role.TEACHER) {
-            throw new IllegalArgumentException("강사만 본인 강의를 조회할 수 있습니다.");
+            throw new BusinessException(ErrorCode.ONLY_TEACHER_CAN_VIEW_OWN_LECTURES);
         }
 
         return lectureRepository.findByTeacherOrderByCreatedAtDesc(teacher)
@@ -89,13 +88,13 @@ public class LectureServiceImpl implements LectureService {
     @Transactional
     public String deleteLecture(String userEmail, Long lectureId) {
         Users teacher = usersRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
 
         if (!lecture.getTeacher().getUserId().equals(teacher.getUserId())) {
-            throw new IllegalArgumentException("본인이 업로드한 강의만 삭제할 수 있습니다.");
+            throw new BusinessException(ErrorCode.ONLY_OWNER_CAN_DELETE_LECTURE);
         }
 
         fileStorageService.deleteFile(lecture.getVideoPath());
