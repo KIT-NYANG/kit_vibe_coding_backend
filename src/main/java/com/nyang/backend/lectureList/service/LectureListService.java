@@ -62,6 +62,14 @@ public class LectureListService {
         return lectureListRepository.findLectureListsByUserId(userId); // custom impl로 넘김 (lecture 테이블이랑 조인하기 때문)
     }
 
+    // 본인의 수강 목록 조회
+    public List<MyLectureListResponseDto> getMyLectureLists(String userEmail) {
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return lectureListRepository.findLectureListsByUserId(user.getUserId());
+    }
+
     // 수강 기록 삭제 메서드 (soft하게 구현했기 때문에 기록은 보존됨)
     @Transactional
     public String deleteLectureList(Long lectureListId) {

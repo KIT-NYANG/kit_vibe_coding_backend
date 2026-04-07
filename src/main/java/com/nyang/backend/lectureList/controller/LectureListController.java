@@ -5,6 +5,7 @@ import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
 import com.nyang.backend.lectureList.service.LectureListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,13 @@ public class LectureListController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<MyLectureListResponseDto>> getLectureLists(@PathVariable Long userId) {
         return ResponseEntity.ok(lectureListService.getLectureLists(userId));
+    }
+
+    // 수강 목록 조회 api
+    @GetMapping("/my")
+    public ResponseEntity<List<MyLectureListResponseDto>> getMyLectureLists(Authentication authentication) {
+        String userEmail = authentication.getName();
+        return ResponseEntity.ok(lectureListService.getMyLectureLists(userEmail));
     }
 
     // 수강 삭제 api
