@@ -3,6 +3,7 @@ package com.nyang.backend.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -44,8 +45,10 @@ public class SecurityConfig {
                                     "api/user/check-email",
                                     "/swagger-ui/**",
                                     "/swagger-ui.html",
-                                    "/v3/api-docs/**"
+                                    "/v3/api-docs/**",
+                                    "/uploads/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/lectures","/api/lectures/*").permitAll() //강의 목록 조회는 열어둠
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
