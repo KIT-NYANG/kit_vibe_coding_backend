@@ -8,6 +8,7 @@ import com.nyang.backend.lecture.dto.LectureResponseDto;
 import com.nyang.backend.lecture.entity.Lecture;
 import com.nyang.backend.lecture.repository.LectureRepository;
 import com.nyang.backend.lecture.storage.FileStorageService;
+import com.nyang.backend.lecture.dto.StoredVideoInfo;
 import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
@@ -40,13 +41,17 @@ public class LectureServiceImpl implements LectureService {
             throw new BusinessException(ErrorCode.VIDEO_FILE_REQUIRED);
         }
 
+        StoredVideoInfo videoInfo = fileStorageService.saveVideo(requestDto.getVideoFile());
+        String thumbnailPath = fileStorageService.saveThumbnail(requestDto.getThumbnailFile());
+
         Lecture lecture = Lecture.create(
                 teacher,
                 requestDto.getCategory(),
                 requestDto.getTitle(),
                 requestDto.getDescription(),
-                fileStorageService.saveVideo(requestDto.getVideoFile()),
-                fileStorageService.saveThumbnail(requestDto.getThumbnailFile())
+                videoInfo.getDurationSeconds(),
+                videoInfo.getVideoPath(),
+                thumbnailPath
         );
 
         Lecture savedLecture = lectureRepository.save(lecture);

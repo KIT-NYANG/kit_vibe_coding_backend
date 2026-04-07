@@ -38,10 +38,20 @@ public class Lecture {
     private String thumbnailPath;
 
     @Column(nullable = false)
+    private Integer durationSeconds;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    public static Lecture create(Users teacher, String category, String title,
-                                 String description, String videoPath, String thumbnailPath) {
+    public static Lecture create(
+            Users teacher,
+            String category,
+            String title,
+            String description,
+            Integer durationSeconds,
+            String videoPath,
+            String thumbnailPath
+    ) {
         return Lecture.builder()
                 .teacher(teacher)
                 .category(category)
@@ -49,6 +59,7 @@ public class Lecture {
                 .description(description)
                 .videoPath(videoPath)
                 .thumbnailPath(thumbnailPath)
+                .durationSeconds(durationSeconds)
                 .createdAt(LocalDateTime.now())
                 .build();
     }

@@ -15,6 +15,7 @@ public class LectureResponseDto {
     private String category;
     private String title;
     private String description;
+    private Integer durationSeconds;
     private String videoUrl;
     private String thumbnailUrl;
     private LocalDateTime createdAt;
@@ -26,6 +27,7 @@ public class LectureResponseDto {
                 .category(lecture.getCategory())
                 .title(lecture.getTitle())
                 .description(lecture.getDescription())
+                .durationSeconds(lecture.getDurationSeconds())
                 .videoUrl(lecture.getVideoPath())
                 .thumbnailUrl(lecture.getThumbnailPath())
                 .createdAt(lecture.getCreatedAt())
