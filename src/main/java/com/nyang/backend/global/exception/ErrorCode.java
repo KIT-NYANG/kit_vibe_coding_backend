@@ -23,7 +23,13 @@ public enum ErrorCode {
     INVALID_INPUT_VALUE(400, "COMMON002", "입력값이 올바르지 않습니다."),
 
     // 서버 오류
-    INTERNAL_SERVER_ERROR(500, "COMMON001", "서버 오류입니다.");
+    INTERNAL_SERVER_ERROR(500, "COMMON001", "서버 오류입니다."),
+
+    // 수강 목록 CRUD 관련s
+    LECTURE_LIST_NOT_FOUND(404, "LECTURE_LIST001", "존재하지 않는 수강 기록입니다."),
+    LECTURE_ALREADY_ENROLLED(409, "LECTURE_LIST002", "이미 수강 신청한 강의입니다."),
+    INVALID_PROGRESS(400, "LECTURE_LIST003", "진행도는 0 이상 100 이하만 가능합니다."),
+    INVALID_WATCH_TIME(400, "LECTURE_LIST004", "시청 시간은 0 이상이어야 합니다.");
 
     private final int status;
     private final String code;
