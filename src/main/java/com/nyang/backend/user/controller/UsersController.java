@@ -33,7 +33,7 @@ public class UsersController {
 
     // 이메일 중복 확인 api
     @GetMapping("/check-email")
-    public ResponseDto<String> checkEmailDuplicate(@RequestParam String email) {
-        return ResponseDto.success(usersService.checkEmailDuplicate(email));
+    public ResponseEntity<ResponseDto<String>> checkEmailDuplicate(@RequestParam String email) {
+        return ResponseEntity.ok(ResponseDto.success(usersService.checkEmailDuplicate(email)));
     }
 }
