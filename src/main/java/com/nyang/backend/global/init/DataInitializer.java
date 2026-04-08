@@ -58,6 +58,15 @@ public class DataInitializer implements CommandLineRunner {
                             .build()
             );
         }
+        Users user = Users.builder()
+                .email("user@example.com")
+                .password(passwordEncoder.encode("string"))
+                .name("선생2")
+                .age(20)
+                .phone("010-2222-2222")
+                .role(Role.TEACHER)
+                .build();
+        usersRepository.save(user);
 
         if (lectureClassRepository.count() > 0 || lectureRepository.count() > 0) {
             return;
