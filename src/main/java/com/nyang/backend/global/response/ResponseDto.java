@@ -1,6 +1,7 @@
 package com.nyang.backend.global.response;
 
 import com.nyang.backend.global.exception.ErrorCode;
+import com.nyang.backend.global.exception.SuccessCode;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,19 +12,19 @@ public class ResponseDto<T> {
     private String message;
     private T data;
 
-    // 성공 응답
-    public static <T> ResponseDto<T> success(T data) {
+    // 성공 응답 - OK: 조회 성공, CREATED: 생성 성공
+    public static <T> ResponseDto<T> success(SuccessCode successCode, T data) {
         return ResponseDto.<T>builder()
-                .code("SUCCESS")
-                .message("success")
+                .code(successCode.getCode())
+                .message(successCode.getMessage())
                 .data(data)
                 .build();
     }
 
     // 성공 응답 (성공 메시지를 같이 넘기는 구조)
-    public static <T> ResponseDto<T> success(String message, T data) {
+    public static <T> ResponseDto<T> success(SuccessCode successCode, String message, T data) {
         return ResponseDto.<T>builder()
-                .code("SUCCESS")
+                .code(successCode.getCode())
                 .message(message)
                 .data(data)
                 .build();
