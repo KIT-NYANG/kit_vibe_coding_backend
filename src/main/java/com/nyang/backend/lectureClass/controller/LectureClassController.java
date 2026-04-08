@@ -1,6 +1,7 @@
 package com.nyang.backend.lectureClass.controller;
 
 import com.nyang.backend.global.exception.SuccessCode;
+import com.nyang.backend.global.response.PageResponseDto;
 import com.nyang.backend.global.response.ResponseDto;
 import com.nyang.backend.lecture.dto.LectureCreateRequestDto;
 import com.nyang.backend.lecture.dto.LectureListResponseDto;
@@ -39,18 +40,26 @@ public class LectureClassController {
 
     // 전체 강좌 조회
     @GetMapping
-    public ResponseEntity<ResponseDto<List<LectureClassListResponseDto>>> getAllLectureClasses() {
-        List<LectureClassListResponseDto> result = lectureClassService.getAllLectureClasses();
+    public ResponseEntity<ResponseDto<PageResponseDto<LectureClassListResponseDto>>> getAllLectureClasses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String keyword
+    ) {
+        PageResponseDto<LectureClassListResponseDto> result =
+                lectureClassService.getAllLectureClasses(page, size, category, keyword);
         return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK, result));
     }
 
     // 내가 올린 강좌 조회
     @GetMapping("/my")
-    public ResponseEntity<ResponseDto<List<LectureClassListResponseDto>>> getMyLectureClasses(
-            Authentication authentication
+    public ResponseEntity<ResponseDto<PageResponseDto<LectureClassListResponseDto>>> getMyLectureClasses(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         String userEmail = authentication.getName();
-        List<LectureClassListResponseDto> result = lectureClassService.getMyLectureClasses(userEmail);
+        PageResponseDto<LectureClassListResponseDto> result = lectureClassService.getMyLectureClasses(userEmail, page, size);
         return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK, result));
     }
 
@@ -76,10 +85,13 @@ public class LectureClassController {
 
     // 특정 강좌에 속한 강의 영상 목록 조회
     @GetMapping("/{lectureClassId}/lectures")
-    public ResponseEntity<ResponseDto<List<LectureListResponseDto>>> getLecturesByLectureClass(
-            @PathVariable Long lectureClassId
+    public ResponseEntity<ResponseDto<PageResponseDto<LectureListResponseDto>>> getLecturesByLectureClass(
+            @PathVariable Long lectureClassId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        List<LectureListResponseDto> result = lectureClassService.getLecturesByLectureClass(lectureClassId);
+        PageResponseDto<LectureListResponseDto> result =
+                lectureClassService.getLecturesByLectureClass(lectureClassId, page, size);
         return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK, result));
     }
 

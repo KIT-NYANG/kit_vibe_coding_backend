@@ -2,6 +2,7 @@ package com.nyang.backend.lectureList.service;
 
 import com.nyang.backend.global.exception.BusinessException;
 import com.nyang.backend.global.exception.ErrorCode;
+import com.nyang.backend.global.response.PageResponseDto;
 import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.lectureList.dto.LectureEnrollmentRequestDto;
 import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
@@ -11,6 +12,10 @@ import com.nyang.backend.lectureClass.repository.LectureClassRepository;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,20 +59,50 @@ public class LectureListService {
     }
 
     // 사용자의 수강 목록 조회
-    public List<MyLectureListResponseDto> getLectureLists(Long userId) {
+    public PageResponseDto<MyLectureListResponseDto> getLectureLists(
+            Long userId,
+            int page,
+            int size,
+            String category,
+            String keyword
+    ) {
         if (!usersRepository.existsById(userId)) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        return lectureListRepository.findLectureListsByUserId(userId); // custom impl로 넘김 (lecture 테이블이랑 조인하기 때문)
+        category = (category == null) ? null : category.trim();
+        keyword = (keyword == null) ? null : keyword.trim();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<MyLectureListResponseDto> result = lectureListRepository.findLectureListsByUserId(
+                userId, category, keyword, pageable
+        ); // custom impl로 넘김 (lecture 테이블이랑 조인하기 때문)
+
+        return PageResponseDto.from(result);
     }
 
     // 본인의 수강 목록 조회
-    public List<MyLectureListResponseDto> getMyLectureLists(String userEmail) {
+    public PageResponseDto<MyLectureListResponseDto> getMyLectureLists(
+            String userEmail,
+            int page,
+            int size,
+            String category,
+            String keyword
+    ) {
         Users user = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        return lectureListRepository.findLectureListsByUserId(user.getUserId());
+        category = (category == null) ? null : category.trim();
+        keyword = (keyword == null) ? null : keyword.trim();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<MyLectureListResponseDto> result = lectureListRepository.findLectureListsByUserId(
+                user.getUserId(), category, keyword, pageable
+        );
+
+        return PageResponseDto.from(result);
     }
 
     // 수강 기록 삭제 메서드 (soft하게 구현했기 때문에 기록은 보존됨)
