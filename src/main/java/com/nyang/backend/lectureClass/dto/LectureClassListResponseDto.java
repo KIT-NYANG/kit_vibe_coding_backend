@@ -14,6 +14,7 @@ public class LectureClassListResponseDto {
     private String teacherName;
     private String title;
     private String category;
+    private String description;
     private String thumbnailUrl;
     private LocalDateTime createdAt;
 
@@ -23,6 +24,7 @@ public class LectureClassListResponseDto {
                 .teacherName(lectureClass.getTeacher().getName())
                 .title(lectureClass.getTitle())
                 .category(lectureClass.getCategory())
+                .description(lectureClass.getDescription())
                 .thumbnailUrl(lectureClass.getThumbnailPath())
                 .createdAt(lectureClass.getCreatedAt())
                 .build();
