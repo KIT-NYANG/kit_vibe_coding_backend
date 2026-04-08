@@ -34,7 +34,7 @@ public class LectureClassController {
         String userEmail = authentication.getName();
         LectureClassResponseDto result = lectureClassService.createLectureClass(userEmail, requestDto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDto.success(SuccessCode.OK, result));
+                .body(ResponseDto.success(SuccessCode.CREATED, result));
     }
 
     // 전체 강좌 조회

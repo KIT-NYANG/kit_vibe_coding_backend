@@ -25,7 +25,7 @@ public class LectureListController {
     public ResponseEntity<ResponseDto<String>> enrollLecture(@RequestBody LectureEnrollmentRequestDto requestDto) {
         String result = lectureListService.enrollLecture(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDto.success(SuccessCode.OK, result));
+                .body(ResponseDto.success(SuccessCode.CREATED, result));
     }
 
     // 수강 목록 조회 api
