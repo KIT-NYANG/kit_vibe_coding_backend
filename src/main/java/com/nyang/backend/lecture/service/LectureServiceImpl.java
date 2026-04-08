@@ -7,6 +7,7 @@ import com.nyang.backend.lecture.dto.LectureCreateRequestDto;
 import com.nyang.backend.lecture.dto.LectureListResponseDto;
 import com.nyang.backend.lecture.dto.LectureResponseDto;
 import com.nyang.backend.lecture.entity.Lecture;
+import com.nyang.backend.lecture.event.LectureCreatedEvent;
 import com.nyang.backend.lecture.repository.LectureRepository;
 import com.nyang.backend.lecture.storage.FileStorageService;
 import com.nyang.backend.lecture.dto.StoredVideoInfo;
@@ -16,13 +17,17 @@ import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -34,6 +39,8 @@ public class LectureServiceImpl implements LectureService {
     private final LectureClassRepository lectureClassRepository;
     private final UsersRepository usersRepository;
     private final FileStorageService fileStorageService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final LectureSttService lectureSttService;
 
     @Override
     @Transactional
@@ -71,6 +78,10 @@ public class LectureServiceImpl implements LectureService {
         );
 
         Lecture savedLecture = lectureRepository.save(lecture);
+
+        File tempFile = createTempFile(requestDto.getVideoFile());
+        lectureSttService.requestSttAndSave(savedLecture.getLectureId(), tempFile);
+
         return LectureResponseDto.from(savedLecture);
     }
 
@@ -192,5 +203,23 @@ public class LectureServiceImpl implements LectureService {
         lecture.softDelete();
 
         return "강의가 삭제되었습니다.";
+    }
+
+
+    private File createTempFile(MultipartFile multipartFile) {
+        try {
+            String originalFilename = multipartFile.getOriginalFilename();
+            String suffix = ".tmp";
+
+            if (originalFilename != null && originalFilename.contains(".")) {
+                suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            File tempFile = File.createTempFile("stt-upload-", suffix);
+            multipartFile.transferTo(tempFile);
+            return tempFile;
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.VIDEO_SAVE_FAILED);
+        }
     }
 }

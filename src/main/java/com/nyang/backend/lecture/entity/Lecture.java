@@ -36,6 +36,9 @@ public class Lecture {
     @Column(nullable = false, length = 500)
     private String videoPath;
 
+    @Column(nullable = true, length = 500)
+    private String tempVideoPath; //현재 스토리지를 사용하지 않아 절대 경로를 저장해야합니다. 스토리지 사용후 변경해야합니다.
+
     @Column(length = 500)
     private String thumbnailPath;
 
@@ -44,6 +47,20 @@ public class Lecture {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SttStatus sttStatus;
+
+    @Column(columnDefinition = "TEXT")
+    private String transcriptFullText;
+
+    private String transcriptLanguage;
+
+    private LocalDateTime sttCompletedAt;
+
+    @Column(length = 1000)
+    private String sttErrorMessage;
 
     @Column(nullable = false)
     @Builder.Default
@@ -67,8 +84,25 @@ public class Lecture {
                 .thumbnailPath(thumbnailPath)
                 .durationSeconds(durationSeconds)
                 .createdAt(LocalDateTime.now())
+                .sttStatus(SttStatus.PENDING)
                 .isDeleted(false)
                 .build();
+    }
+    public void markSttProcessing() {
+        this.sttStatus = SttStatus.PROCESSING;
+    }
+
+    public void markSttCompleted(String fullText, String language, LocalDateTime completedAt) {
+        this.sttStatus = SttStatus.COMPLETED;
+        this.transcriptFullText = fullText;
+        this.transcriptLanguage = language;
+        this.sttCompletedAt = completedAt;
+        this.sttErrorMessage = null;
+    }
+
+    public void markSttFailed(String errorMessage) {
+        this.sttStatus = SttStatus.FAILED;
+        this.sttErrorMessage = errorMessage;
     }
 
     // 강의 영상도 soft del
