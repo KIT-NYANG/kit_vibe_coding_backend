@@ -39,7 +39,8 @@ public enum ErrorCode {
 
     // 서버 오류
     INTERNAL_SERVER_ERROR(500, "COMMON001", "서버 오류입니다."),
-
+    STT_PROCESS_FAILED(500, "STT_500_1", "STT 처리 중 오류가 발생했습니다."),
+    FILE_CONVERSION_FAILED(500, "FILE_500_1", "임시 파일 생성에 실패했습니다."),
     // 수강 목록 CRUD 관련
     LECTURE_LIST_NOT_FOUND(404, "LECTURE_LIST001", "존재하지 않는 수강 기록입니다."),
     LECTURE_ALREADY_ENROLLED(409, "LECTURE_LIST002", "이미 수강 신청한 강의입니다."),
