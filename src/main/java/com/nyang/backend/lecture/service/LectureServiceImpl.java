@@ -79,9 +79,10 @@ public class LectureServiceImpl implements LectureService {
 
         Lecture savedLecture = lectureRepository.save(lecture);
 
+//        File tempFile = createTempFile(requestDto.getVideoFile());
+//        lectureSttService.requestSttAndSave(savedLecture.getLectureId(), tempFile);
         File tempFile = createTempFile(requestDto.getVideoFile());
-        lectureSttService.requestSttAndSave(savedLecture.getLectureId(), tempFile);
-
+        lectureSttService.requestSttAsync(savedLecture.getLectureId(), tempFile);
         return LectureResponseDto.from(savedLecture);
     }
 

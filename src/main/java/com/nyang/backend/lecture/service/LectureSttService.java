@@ -24,72 +24,73 @@ public class LectureSttService {
     private final LectureRepository lectureRepository;
     private final LectureTranscriptSegmentRepository segmentRepository;
     private final SttClientService sttClientService;
-// 기존 비동기-> 동기 방식 처리 STT 까지 완료 후 업로드
-//    public void requestSttAsync(Long lectureId, File tempFile) {
-//        Lecture lecture = lectureRepository.findById(lectureId)
-//                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
-//
-//        lecture.markSttProcessing();
-//        lectureRepository.save(lecture);
-//
-//        sttClientService.sendToSttServer(tempFile)
-//                .subscribe(
-//                        response -> {
-//                            try {
-//                                saveTranscriptResult(lectureId, response);
-//                            } finally {
-//                                deleteTempFile(tempFile);
-//                            }
-//                        },
-//                        error -> {
-//                            try {
-//                                markFailed(lectureId, error);
-//                            } finally {
-//                                deleteTempFile(tempFile);
-//                            }
-//                        }
-//                );
-//    }
-@Transactional
-public void requestSttAndSave(Long lectureId, File tempFile) {
-    Lecture lecture = lectureRepository.findById(lectureId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
 
-    try {
+    public void requestSttAsync(Long lectureId, File tempFile) {
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
+
         lecture.markSttProcessing();
         lectureRepository.save(lecture);
 
-        SttResponseDto response = sttClientService.sendToSttServer(tempFile);
-
-        List<LectureTranscriptSegment> segments = response.getSegments().stream()
-                .map(segment -> LectureTranscriptSegment.builder()
-                        .lecture(lecture)
-                        .segmentIndex(segment.getIndex())
-                        .startMs(toMs(segment.getStart()))
-                        .endMs(toMs(segment.getEnd()))
-                        .text(segment.getText())
-                        .build())
-                .toList();
-
-        segmentRepository.saveAll(segments);
-
-        lecture.markSttCompleted(
-                response.getFullText(),
-                response.getLanguage(),
-                LocalDateTime.now()
-        );
-        lectureRepository.save(lecture);
-
-    } catch (Exception e) {
-        lecture.markSttFailed(e.getMessage());
-        lectureRepository.save(lecture);
-
-        log.error("STT failed. lectureId={}, message={}", lectureId, e.getMessage(), e);
-        throw new BusinessException(ErrorCode.STT_PROCESS_FAILED);
-    } finally {
-        deleteTempFile(tempFile);
+        sttClientService.sendToSttServer(tempFile)
+                .subscribe(
+                        response -> {
+                            try {
+                                saveTranscriptResult(lectureId, response);
+                            } finally {
+                                deleteTempFile(tempFile);
+                            }
+                        },
+                        error -> {
+                            try {
+                                markFailed(lectureId, error);
+                            } finally {
+                                deleteTempFile(tempFile);
+                            }
+                        }
+                );
     }
-}
+    // 기존 비동기-> 동기 방식 처리 STT 까지 완료 후 업로드 -> 다시 비동기
+//@Transactional
+//public void requestSttAndSave(Long lectureId, File tempFile) {
+//    Lecture lecture = lectureRepository.findById(lectureId)
+//            .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
+//
+//    try {
+//        lecture.markSttProcessing();
+//        lectureRepository.save(lecture);
+//
+//        SttResponseDto response = sttClientService.sendToSttServer(tempFile);
+//
+//        List<LectureTranscriptSegment> segments = response.getSegments().stream()
+//                .map(segment -> LectureTranscriptSegment.builder()
+//                        .lecture(lecture)
+//                        .segmentIndex(segment.getIndex())
+//                        .startMs(toMs(segment.getStart()))
+//                        .endMs(toMs(segment.getEnd()))
+//                        .text(segment.getText())
+//                        .build())
+//                .toList();
+//
+//        segmentRepository.saveAll(segments);
+//
+//        lecture.markSttCompleted(
+//                response.getFullText(),
+//                response.getLanguage(),
+//                LocalDateTime.now()
+//        );
+//        lectureRepository.save(lecture);
+//
+//    } catch (Exception e) {
+//        lecture.markSttFailed(e.getMessage());
+//        lectureRepository.save(lecture);
+//
+//        log.error("STT failed. lectureId={}, message={}", lectureId, e.getMessage(), e);
+//        throw new BusinessException(ErrorCode.STT_PROCESS_FAILED);
+//    } finally {
+//        deleteTempFile(tempFile);
+//    }
+//}
     @Transactional
     public void saveTranscriptResult(Long lectureId, SttResponseDto response) {
         Lecture lecture = lectureRepository.findById(lectureId)
