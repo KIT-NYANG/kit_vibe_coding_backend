@@ -2,6 +2,7 @@ package com.nyang.backend.lectureClass.service;
 
 import com.nyang.backend.global.exception.BusinessException;
 import com.nyang.backend.global.exception.ErrorCode;
+import com.nyang.backend.global.response.PageResponseDto;
 import com.nyang.backend.lecture.dto.LectureListResponseDto;
 import com.nyang.backend.lecture.repository.LectureRepository;
 import com.nyang.backend.lecture.storage.FileStorageService;
@@ -14,6 +15,10 @@ import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +40,15 @@ public class LectureClassServiceImpl implements LectureClassService {
         Users teacher = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        // 강사 권한이 아닌 경우 강좌 생성 불가
         if (teacher.getRole() != Role.TEACHER) {
             throw new BusinessException(ErrorCode.ONLY_TEACHER_CAN_UPLOAD);
         }
 
+        // 썸네일 파일 저장 후 저장 경로 반환
         String thumbnailPath = fileStorageService.saveThumbnail(requestDto.getThumbnailFile());
 
+        // 강좌 엔티티 생성
         LectureClass lectureClass = LectureClass.create(
                 teacher,
                 requestDto.getTitle(),
@@ -54,30 +62,63 @@ public class LectureClassServiceImpl implements LectureClassService {
     }
 
     @Override
-    public List<LectureClassListResponseDto> getAllLectureClasses() {
-        return lectureClassRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc()
-                .stream()
-                .map(LectureClassListResponseDto::from)
-                .toList();
+    public PageResponseDto<LectureClassListResponseDto> getAllLectureClasses(
+            int page, int size, String category, String keyword
+    ) {
+        // 페이지 번호, 크기, 정렬 조건 설정
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        boolean hasCategory = category != null && !category.trim().isEmpty();
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+
+        Page<LectureClass> lectureClassPage;
+
+        // category + keyword 둘 다 있을 때
+        if (hasCategory && hasKeyword) {
+            lectureClassPage = lectureClassRepository
+                    .findByIsDeletedFalseAndCategoryAndTitleContaining(category, keyword, pageable);
+        } else if (hasCategory) { // category만 있을 때
+            lectureClassPage = lectureClassRepository
+                    .findByIsDeletedFalseAndCategory(category, pageable);
+        } else if (hasKeyword) { // keyword만 있을 때
+            lectureClassPage = lectureClassRepository
+                    .findByIsDeletedFalseAndTitleContaining(keyword, pageable);
+        } else { // 필터 없이 전체 조회
+            lectureClassPage = lectureClassRepository
+                    .findAllByIsDeletedFalse(pageable);
+        }
+
+        Page<LectureClassListResponseDto> dtoPage  = lectureClassPage.map(LectureClassListResponseDto::from);
+
+        return PageResponseDto.from(dtoPage);
     }
 
     @Override
-    public List<LectureClassListResponseDto> getMyLectureClasses(String userEmail) {
+    public PageResponseDto<LectureClassListResponseDto> getMyLectureClasses(
+            String userEmail, int page, int size
+    ) {
         Users teacher = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        // 강사 권한이 아닌 경우 본인 강좌 목록 조회 불가
         if (teacher.getRole() != Role.TEACHER) {
             throw new BusinessException(ErrorCode.ONLY_TEACHER_CAN_VIEW_OWN_LECTURES);
         }
 
-        return lectureClassRepository.findByTeacherAndIsDeletedFalseOrderByCreatedAtDesc(teacher)
-                .stream()
-                .map(LectureClassListResponseDto::from)
-                .toList();
+        // 페이지 번호, 크기, 정렬 조건 설정
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // 해당 강사가 등록한 강좌 목록 조회 후 DTO 변환
+        Page<LectureClassListResponseDto> result = lectureClassRepository
+                .findByTeacherAndIsDeletedFalse(teacher, pageable)
+                .map(LectureClassListResponseDto::from);
+
+        return PageResponseDto.from(result);
     }
 
     @Override
     public LectureClassResponseDto getLectureClassDetail(Long lectureClassId) {
+        // 삭제되지 않은 강좌 상세 조회
         LectureClass lectureClass = lectureClassRepository.findByLectureClassIdAndIsDeletedFalse(lectureClassId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_CLASS_NOT_FOUND));
 
@@ -85,14 +126,23 @@ public class LectureClassServiceImpl implements LectureClassService {
     }
 
     @Override
-    public List<LectureListResponseDto> getLecturesByLectureClass(Long lectureClassId) {
+    public PageResponseDto<LectureListResponseDto> getLecturesByLectureClass(
+            Long lectureClassId, int page, int size
+    ) {
+        // 강좌 존재 여부 확인
         LectureClass lectureClass = lectureClassRepository.findByLectureClassIdAndIsDeletedFalse(lectureClassId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_CLASS_NOT_FOUND));
 
-        return lectureRepository.findByLectureClassAndIsDeletedFalseOrderByCreatedAtAsc(lectureClass)
-                .stream()
-                .map(LectureListResponseDto::from)
-                .toList();
+        // 강의 목록 페이지 조건 설정
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
+
+        // 해당 강좌에 속한 강의 목록 조회 후 DTO 변환
+        Page<LectureListResponseDto> result = lectureRepository
+                .findByLectureClassAndIsDeletedFalse(lectureClass, pageable)
+                .map(LectureListResponseDto::from);
+
+
+        return PageResponseDto.from(result);
     }
 
     @Override
@@ -104,10 +154,12 @@ public class LectureClassServiceImpl implements LectureClassService {
         LectureClass lectureClass = lectureClassRepository.findByLectureClassIdAndIsDeletedFalse(lectureClassId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_CLASS_NOT_FOUND));
 
+        // 본인이 등록한 강좌가 아니면 삭제 불가
         if (!lectureClass.getTeacher().getUserId().equals(teacher.getUserId())) {
             throw new BusinessException(ErrorCode.ONLY_OWNER_CAN_DELETE_LECTURE);
         }
 
+        // soft delete 처리
         lectureClass.softDelete();
         return "강좌가 삭제되었습니다.";
     }

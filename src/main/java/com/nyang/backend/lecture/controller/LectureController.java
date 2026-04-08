@@ -1,6 +1,7 @@
 package com.nyang.backend.lecture.controller;
 
 import com.nyang.backend.global.exception.SuccessCode;
+import com.nyang.backend.global.response.PageResponseDto;
 import com.nyang.backend.global.response.ResponseDto;
 import com.nyang.backend.lecture.dto.LectureCreateRequestDto;
 import com.nyang.backend.lecture.dto.LectureListResponseDto;
@@ -34,6 +35,19 @@ public class LectureController {
                 .body(ResponseDto.success(SuccessCode.CREATED, result));
     }
 
+    // 강의 전체 조회
+    @GetMapping
+    public ResponseEntity<ResponseDto<PageResponseDto<LectureListResponseDto>>> getAllLectures(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long lectureClassId,
+            @RequestParam(required = false) String keyword
+    ) {
+        PageResponseDto<LectureListResponseDto> result =
+                lectureService.getAllLectures(page, size, lectureClassId, keyword);
+        return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK, result));
+    }
+
     // 강의 상세 조회
     @GetMapping("/{lectureId}")
     public ResponseEntity<ResponseDto<LectureResponseDto>> getLectureDetail(@PathVariable Long lectureId) {
@@ -43,9 +57,15 @@ public class LectureController {
 
     // 내가 올린 강의 조회
     @GetMapping("/my")
-    public ResponseEntity<ResponseDto<List<LectureListResponseDto>>> getMyLectures(Authentication authentication) {
+    public ResponseEntity<ResponseDto<PageResponseDto<LectureListResponseDto>>> getMyLectures(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long lectureClassId,
+            @RequestParam(required = false) String keyword
+    ) {
         String userEmail = authentication.getName();
-        List<LectureListResponseDto> result = lectureService.getMyLectures(userEmail);
+        PageResponseDto<LectureListResponseDto> result = lectureService.getMyLectures(userEmail, page, size, lectureClassId, keyword);
         return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK, result));
     }
 
