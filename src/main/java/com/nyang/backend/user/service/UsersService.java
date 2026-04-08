@@ -61,6 +61,9 @@ public class UsersService {
     }
 
     public LoginResponseDto login(LoginRequestDto requestDto) {
+        Users users = usersRepository.findByEmail(requestDto.getEmail())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)); // 회원이 먼저 존재하는지 확인
+        
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -71,9 +74,6 @@ public class UsersService {
         } catch (BadCredentialsException e) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED);
         }
-
-        Users users = usersRepository.findByEmail(requestDto.getEmail())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // JWT 생성
         String accessToken = jwtTokenProvider.createToken(
