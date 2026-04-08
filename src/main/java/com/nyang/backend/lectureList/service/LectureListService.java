@@ -32,8 +32,8 @@ public class LectureListService {
 
     // 수강 신청 메서드
     @Transactional
-    public String enrollLecture(LectureEnrollmentRequestDto requestDto) {
-        Users users = usersRepository.findById(requestDto.getUserId())
+    public String enrollLecture(LectureEnrollmentRequestDto requestDto, String UserEmail) {
+        Users users = usersRepository.findByEmail(UserEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)); // 사용자 먼저 조회
 
         LectureClass lectureClass = lectureClassRepository.findByLectureClassIdAndIsDeletedFalse(requestDto.getLectureClassId())
@@ -42,7 +42,7 @@ public class LectureListService {
         // 중복 수강 신청 검사
         boolean alreadyEnrolled = lectureListRepository
                 .existsByUsers_UserIdAndLectureClass_LectureClassIdAndIsDeletedFalse(
-                        requestDto.getUserId(),
+                        users.getUserId(),
                         requestDto.getLectureClassId()
                 );
 

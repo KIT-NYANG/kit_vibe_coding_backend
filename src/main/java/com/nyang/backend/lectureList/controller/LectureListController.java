@@ -23,8 +23,9 @@ public class LectureListController {
 
     // 수강 신청 api
     @PostMapping
-    public ResponseEntity<ResponseDto<String>> enrollLecture(@RequestBody LectureEnrollmentRequestDto requestDto) {
-        String result = lectureListService.enrollLecture(requestDto);
+    public ResponseEntity<ResponseDto<String>> enrollLecture(Authentication authentication, @RequestBody LectureEnrollmentRequestDto requestDto) {
+        String userEmail = authentication.getName();
+        String result = lectureListService.enrollLecture(requestDto,userEmail);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseDto.success(SuccessCode.CREATED, result));
     }
