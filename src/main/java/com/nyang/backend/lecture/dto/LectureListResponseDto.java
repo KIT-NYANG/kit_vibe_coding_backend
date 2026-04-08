@@ -1,6 +1,7 @@
 package com.nyang.backend.lecture.dto;
 
 import com.nyang.backend.lecture.entity.Lecture;
+import com.nyang.backend.lecture.entity.SttStatus;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,6 +19,7 @@ public class LectureListResponseDto {
     private String thumbnailUrl;
     private Integer durationSeconds;
     private LocalDateTime createdAt;
+    private SttStatus sttStatus;
 
     public static LectureListResponseDto from(Lecture lecture) {
         return LectureListResponseDto.builder()
@@ -32,6 +34,7 @@ public class LectureListResponseDto {
                 .description(lecture.getDescription())
                 .thumbnailUrl(lecture.getThumbnailPath())
                 .durationSeconds(lecture.getDurationSeconds())
+                .sttStatus(lecture.getSttStatus())
                 .createdAt(lecture.getCreatedAt())
                 .build();
     }
