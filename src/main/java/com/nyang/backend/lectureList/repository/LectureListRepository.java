@@ -1,6 +1,8 @@
 package com.nyang.backend.lectureList.repository;
 
+import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.lectureList.entity.LectureList;
+import com.nyang.backend.user.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
@@ -10,4 +12,6 @@ public interface LectureListRepository extends JpaRepository<LectureList, Long>,
 
     // 수강 목록 단건 조회
     Optional<LectureList> findByLectureListIdAndIsDeletedFalse(Long lectureListId);
+
+    Optional<LectureList> findByUsersAndLectureClass(Users users, LectureClass lectureClass);
 }

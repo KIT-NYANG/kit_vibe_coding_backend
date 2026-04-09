@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +41,22 @@ public class LectureListService {
         LectureClass lectureClass = lectureClassRepository.findByLectureClassIdAndIsDeletedFalse(requestDto.getLectureClassId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_CLASS_NOT_FOUND)); // 강좌 조회
 
+        Optional<LectureList> existingLectureList = lectureListRepository.findByUsersAndLectureClass(users, lectureClass);
+
+        // 기존 수강 기록이 있는 경우
+        if (existingLectureList.isPresent()) {
+            LectureList lectureList = existingLectureList.get();
+
+            // 이미 활성 상태면 중복 신청
+            if (!lectureList.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.LECTURE_ALREADY_ENROLLED);
+            }
+
+            // soft delete 상태면 복구
+            lectureList.restore();
+            return "수강 신청 완료";
+        }
+
         // 중복 수강 신청 검사
         boolean alreadyEnrolled = lectureListRepository
                 .existsByUsers_UserIdAndLectureClass_LectureClassIdAndIsDeletedFalse(
@@ -47,12 +64,7 @@ public class LectureListService {
                         requestDto.getLectureClassId()
                 );
 
-        // 이미 신청했으면 예외처리
-        if (alreadyEnrolled) {
-            throw new BusinessException(ErrorCode.LECTURE_ALREADY_ENROLLED);
-        }
-
-        // 엔티티 생성 (수강 기록 객체)
+        // 엔티티 생성 (수강 기록 객체) - 기존 기록이 없으면 새로 생성
         LectureList lectureList = LectureList.create(users, lectureClass);
 
         lectureListRepository.save(lectureList);

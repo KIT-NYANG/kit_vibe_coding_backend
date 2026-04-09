@@ -51,4 +51,10 @@ public class LectureList {
     public void softDelete() {
         this.isDeleted = true;
     }
+
+    // 수강 신청 취소 복구
+    public void restore() {
+        this.isDeleted = false;
+        this.createdAt = LocalDateTime.now();
+    }
 }
