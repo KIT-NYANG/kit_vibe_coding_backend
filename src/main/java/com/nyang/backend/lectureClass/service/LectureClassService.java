@@ -6,6 +6,7 @@ import com.nyang.backend.lectureClass.dto.LectureClassCreateRequestDto;
 import com.nyang.backend.lectureClass.dto.LectureClassListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
 import com.nyang.backend.lectureClass.entity.LectureClassCategory;
+import com.nyang.backend.lectureList.dto.LectureCheckResponseDto;
 
 import java.util.List;
 
@@ -27,6 +28,9 @@ public interface LectureClassService {
     // 특정 강좌에 속한 강의 목록 조회
     PageResponseDto<LectureListResponseDto> getLecturesByLectureClass(Long lectureClassId, int page, int size);
 
+    // 수강 중인 강좌인지 확인
+    LectureCheckResponseDto checkLectureEnrollment(String userEmail, Long lectureClassId);
+    
     // 강좌 삭제
     String deleteLectureClass(String userEmail, Long lectureClassId);
 }

@@ -12,6 +12,8 @@ import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
 import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureClass.repository.LectureClassRepository;
+import com.nyang.backend.lectureList.dto.LectureCheckResponseDto;
+import com.nyang.backend.lectureList.repository.LectureListRepository;
 import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
@@ -23,7 +25,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,7 @@ public class LectureClassServiceImpl implements LectureClassService {
 
     private final LectureClassRepository lectureClassRepository;
     private final LectureRepository lectureRepository;
+    private final LectureListRepository lectureListRepository;
     private final UsersRepository usersRepository;
     private final FileStorageService fileStorageService;
 
@@ -146,6 +148,24 @@ public class LectureClassServiceImpl implements LectureClassService {
 
 
         return PageResponseDto.from(result);
+    }
+
+    // 수강 중인 강좌인지 확인하는 메서드
+    @Override
+    public LectureCheckResponseDto checkLectureEnrollment(String userEmail, Long lectureClassId) {
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)); // 회원 조회
+
+        LectureClass lectureClass = lectureClassRepository.findByLectureClassIdAndIsDeletedFalse(lectureClassId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_CLASS_NOT_FOUND)); // 강좌 조회
+
+        boolean isEnrolled = lectureListRepository
+                .existsByUsers_UserIdAndLectureClass_LectureClassIdAndIsDeletedFalse(
+                        user.getUserId(),
+                        lectureClass.getLectureClassId()
+                );
+
+        return new LectureCheckResponseDto(isEnrolled);
     }
 
     @Override

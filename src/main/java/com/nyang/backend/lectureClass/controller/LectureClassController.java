@@ -11,6 +11,7 @@ import com.nyang.backend.lectureClass.dto.LectureClassListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
 import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureClass.service.LectureClassService;
+import com.nyang.backend.lectureList.dto.LectureCheckResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,6 +38,19 @@ public class LectureClassController {
         LectureClassResponseDto result = lectureClassService.createLectureClass(userEmail, requestDto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseDto.success(SuccessCode.CREATED, result));
+    }
+
+    // 수강 중인 강좌인지 확인
+    @GetMapping("/{lectureClassId}/check")
+    public ResponseEntity<ResponseDto<LectureCheckResponseDto>> checkLectureEnrollment(
+            @PathVariable Long lectureClassId,
+            Authentication authentication
+    ) {
+        String userEmail = authentication.getName();
+        LectureCheckResponseDto result =
+                lectureClassService.checkLectureEnrollment(userEmail, lectureClassId);
+
+        return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK, result));
     }
 
     // 전체 강좌 조회
