@@ -62,6 +62,12 @@ public class Lecture {
     @Column(length = 1000)
     private String sttErrorMessage;
 
+    @Column(columnDefinition = "TEXT")
+    private String summaryText;
+
+    @Column(length = 1000)
+    private String summaryKeywords;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean isDeleted = false;
@@ -92,10 +98,13 @@ public class Lecture {
         this.sttStatus = SttStatus.PROCESSING;
     }
 
-    public void markSttCompleted(String fullText, String language, LocalDateTime completedAt) {
+    public void markSttCompleted(String fullText, String language,
+                                 String summaryText, String summaryKeywords, LocalDateTime completedAt) {
         this.sttStatus = SttStatus.COMPLETED;
         this.transcriptFullText = fullText;
         this.transcriptLanguage = language;
+        this.summaryText = summaryText;
+        this.summaryKeywords = summaryKeywords;
         this.sttCompletedAt = completedAt;
         this.sttErrorMessage = null;
     }

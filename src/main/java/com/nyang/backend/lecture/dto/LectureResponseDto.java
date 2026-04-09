@@ -23,6 +23,8 @@ public class LectureResponseDto {
     private SttStatus sttStatus;
     private String transcriptFullText;
     private String transcriptLanguage;
+    private String summaryText;
+    private String summaryKeywords;
     private String sttErrorMessage;
     private LocalDateTime sttCompletedAt;
 
@@ -39,6 +41,8 @@ public class LectureResponseDto {
                 .sttStatus(lecture.getSttStatus())
                 .transcriptFullText(lecture.getTranscriptFullText())
                 .transcriptLanguage(lecture.getTranscriptLanguage())
+                .summaryText(lecture.getSummaryText())
+                .summaryKeywords(lecture.getSummaryKeywords())
                 .sttCompletedAt(lecture.getSttCompletedAt())
                 .sttErrorMessage(lecture.getSttErrorMessage())
                 .createdAt(lecture.getCreatedAt())
