@@ -23,7 +23,7 @@ public class LectureClassResponseDto {
                 .lectureClassId(lectureClass.getLectureClassId())
                 .teacherName(lectureClass.getTeacher().getName())
                 .title(lectureClass.getTitle())
-                .category(lectureClass.getCategory())
+                .category(lectureClass.getCategory().name())
                 .description(lectureClass.getDescription())
                 .thumbnailUrl(lectureClass.getThumbnailPath())
                 .createdAt(lectureClass.getCreatedAt())

@@ -4,6 +4,7 @@ import com.nyang.backend.global.exception.BusinessException;
 import com.nyang.backend.global.exception.ErrorCode;
 import com.nyang.backend.global.response.PageResponseDto;
 import com.nyang.backend.lectureClass.entity.LectureClass;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureList.dto.LectureEnrollmentRequestDto;
 import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
 import com.nyang.backend.lectureList.entity.LectureList;
@@ -63,15 +64,14 @@ public class LectureListService {
             Long userId,
             int page,
             int size,
-            String category,
+            LectureClassCategory category,
             String keyword
     ) {
         if (!usersRepository.existsById(userId)) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        category = (category == null) ? null : category.trim();
-        keyword = (keyword == null) ? null : keyword.trim();
+        keyword = (keyword == null) ? null : keyword.replaceAll("\\s+", "").trim();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -87,14 +87,13 @@ public class LectureListService {
             String userEmail,
             int page,
             int size,
-            String category,
+            LectureClassCategory category,
             String keyword
     ) {
         Users user = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        category = (category == null) ? null : category.trim();
-        keyword = (keyword == null) ? null : keyword.trim();
+        keyword = (keyword == null) ? null : keyword.replaceAll("\\s+", "").trim();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 

@@ -9,7 +9,9 @@ import com.nyang.backend.lecture.dto.LectureResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassCreateRequestDto;
 import com.nyang.backend.lectureClass.dto.LectureClassListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureClass.service.LectureClassService;
+import com.nyang.backend.lectureList.dto.LectureCheckResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,12 +40,25 @@ public class LectureClassController {
                 .body(ResponseDto.success(SuccessCode.CREATED, result));
     }
 
+    // 수강 중인 강좌인지 확인
+    @GetMapping("/{lectureClassId}/check")
+    public ResponseEntity<ResponseDto<LectureCheckResponseDto>> checkLectureEnrollment(
+            @PathVariable Long lectureClassId,
+            Authentication authentication
+    ) {
+        String userEmail = authentication.getName();
+        LectureCheckResponseDto result =
+                lectureClassService.checkLectureEnrollment(userEmail, lectureClassId);
+
+        return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK, result));
+    }
+
     // 전체 강좌 조회
     @GetMapping
     public ResponseEntity<ResponseDto<PageResponseDto<LectureClassListResponseDto>>> getAllLectureClasses(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) LectureClassCategory category,
             @RequestParam(required = false) String keyword
     ) {
         PageResponseDto<LectureClassListResponseDto> result =

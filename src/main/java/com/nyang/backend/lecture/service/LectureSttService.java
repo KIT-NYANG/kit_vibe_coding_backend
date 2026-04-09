@@ -108,9 +108,22 @@ public class LectureSttService {
 
         segmentRepository.saveAll(segments);
 
+        String summaryText = null;
+        String summaryKeywords = null;
+
+        if (response.getSummarize() != null) {
+            summaryText = response.getSummarize().getSummaryText();
+
+            if (response.getSummarize().getKeywords() != null) {
+                summaryKeywords = String.join(",", response.getSummarize().getKeywords());
+            }
+        }
+
         lecture.markSttCompleted(
                 response.getFullText(),
                 response.getLanguage(),
+                summaryText,
+                summaryKeywords,
                 LocalDateTime.now()
         );
         lectureRepository.save(lecture);

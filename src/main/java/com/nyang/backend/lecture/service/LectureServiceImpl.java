@@ -91,7 +91,7 @@ public class LectureServiceImpl implements LectureService {
             int page, int size, Long lectureClassId, String keyword
     ) {
         // 검색어 공백 제거
-        keyword = (keyword == null) ? null : keyword.trim();
+        keyword = (keyword == null) ? null : keyword.replaceAll("\\s+", "").trim();
 
         // 페이지 번호, 크기, 정렬 조건 설정
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -104,7 +104,7 @@ public class LectureServiceImpl implements LectureService {
         // 강좌 필터 + 제목 검색
         if (hasLectureClassId && hasKeyword) {
             lecturePage = lectureRepository
-                    .findByIsDeletedFalseAndLectureClass_LectureClassIdAndTitleContaining(
+                    .findByIsDeletedFalseAndLectureClass_LectureClassIdAndTitleContainingIgnoreSpace(
                             lectureClassId, keyword, pageable
                     );
         } else if (hasLectureClassId) { // 강좌 필터만 적용
@@ -114,7 +114,7 @@ public class LectureServiceImpl implements LectureService {
                     );
         } else if (hasKeyword) { // 제목 검색만 적용
             lecturePage = lectureRepository
-                    .findByIsDeletedFalseAndTitleContaining(
+                    .findByIsDeletedFalseAndTitleContainingIgnoreSpace(
                             keyword, pageable
                     );
         } else { // 조건 없이 전체 조회
@@ -147,7 +147,7 @@ public class LectureServiceImpl implements LectureService {
         }
 
         // 검색어 공백 제거
-        keyword = (keyword == null) ? null : keyword.trim();
+        keyword = (keyword == null) ? null : keyword.replaceAll("\\s+", "").trim();
 
         // 페이지 번호, 크기, 정렬 조건 설정
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -160,7 +160,7 @@ public class LectureServiceImpl implements LectureService {
         // 내 강의 조회 - 강좌 필터 + 제목 검색
         if (hasLectureClassId && hasKeyword) {
             lecturePage = lectureRepository
-                    .findByTeacherAndIsDeletedFalseAndLectureClass_LectureClassIdAndTitleContaining(
+                    .findByTeacherAndIsDeletedFalseAndLectureClass_LectureClassIdAndTitleContainingIgnoreSpace(
                             teacher, lectureClassId, keyword, pageable
                     );
         } else if (hasLectureClassId) { // 내 강의 조회 - 강좌 필터만 적용
@@ -170,7 +170,7 @@ public class LectureServiceImpl implements LectureService {
                     );
         } else if (hasKeyword) { // 내 강의 조회 - 제목 검색만 적용
             lecturePage = lectureRepository
-                    .findByTeacherAndIsDeletedFalseAndTitleContaining(
+                    .findByTeacherAndIsDeletedFalseAndTitleContainingIgnoreSpace(
                             teacher, keyword, pageable
                     );
         } else { // 내 강의 전체 조회

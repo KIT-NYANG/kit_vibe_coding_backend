@@ -1,5 +1,6 @@
 package com.nyang.backend.lectureClass.dto;
 
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class LectureClassCreateRequestDto {
 
     private String title;
-    private String category;
+    private LectureClassCategory category;
     private String description;
     private MultipartFile thumbnailFile;
 }

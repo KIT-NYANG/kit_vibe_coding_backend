@@ -24,7 +24,7 @@ public class MyLectureListResponseDto {
                 .lectureListId(lectureList.getLectureListId())
                 .lectureClassId(lectureClass.getLectureClassId())
                 .title(lectureClass.getTitle())
-                .category(lectureClass.getCategory())
+                .category(lectureClass.getCategory().name())
                 .description(lectureClass.getDescription())
                 .thumbnailUrl(lectureClass.getThumbnailPath())
                 .createdAt(lectureList.getCreatedAt())

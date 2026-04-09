@@ -18,4 +18,6 @@ public class SttResponseDto {
     private String fullText;
 
     private List<SttSegmentDto> segments;
+
+    private SttSummaryDto summarize;
 }

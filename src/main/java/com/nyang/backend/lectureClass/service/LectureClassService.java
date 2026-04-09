@@ -5,6 +5,8 @@ import com.nyang.backend.lecture.dto.LectureListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassCreateRequestDto;
 import com.nyang.backend.lectureClass.dto.LectureClassListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
+import com.nyang.backend.lectureList.dto.LectureCheckResponseDto;
 
 import java.util.List;
 
@@ -14,7 +16,7 @@ public interface LectureClassService {
 
     // 전체 강좌 목록 조회
     PageResponseDto<LectureClassListResponseDto> getAllLectureClasses(
-            int page, int size, String category, String keyword
+            int page, int size, LectureClassCategory category, String keyword
     );
 
     // 현재 로그인한 강사가 등록한 본인 강좌 목록 조회
@@ -26,6 +28,9 @@ public interface LectureClassService {
     // 특정 강좌에 속한 강의 목록 조회
     PageResponseDto<LectureListResponseDto> getLecturesByLectureClass(Long lectureClassId, int page, int size);
 
+    // 수강 중인 강좌인지 확인
+    LectureCheckResponseDto checkLectureEnrollment(String userEmail, Long lectureClassId);
+    
     // 강좌 삭제
     String deleteLectureClass(String userEmail, Long lectureClassId);
 }

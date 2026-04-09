@@ -10,7 +10,10 @@ import com.nyang.backend.lectureClass.dto.LectureClassCreateRequestDto;
 import com.nyang.backend.lectureClass.dto.LectureClassListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
 import com.nyang.backend.lectureClass.entity.LectureClass;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureClass.repository.LectureClassRepository;
+import com.nyang.backend.lectureList.dto.LectureCheckResponseDto;
+import com.nyang.backend.lectureList.repository.LectureListRepository;
 import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
@@ -22,7 +25,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +33,11 @@ public class LectureClassServiceImpl implements LectureClassService {
 
     private final LectureClassRepository lectureClassRepository;
     private final LectureRepository lectureRepository;
+    private final LectureListRepository lectureListRepository;
     private final UsersRepository usersRepository;
     private final FileStorageService fileStorageService;
 
+    // 강좌 생성
     @Override
     @Transactional
     public LectureClassResponseDto createLectureClass(String userEmail, LectureClassCreateRequestDto requestDto) {
@@ -61,28 +65,29 @@ public class LectureClassServiceImpl implements LectureClassService {
         return LectureClassResponseDto.from(savedLectureClass);
     }
 
+    // 모든 강좌 조회
     @Override
     public PageResponseDto<LectureClassListResponseDto> getAllLectureClasses(
-            int page, int size, String category, String keyword
+            int page, int size, LectureClassCategory category, String keyword
     ) {
         // 페이지 번호, 크기, 정렬 조건 설정
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        boolean hasCategory = category != null && !category.trim().isEmpty();
-        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasCategory = category != null;
+        boolean hasKeyword = keyword != null && !keyword.replaceAll("\\s+", "").trim().isEmpty();
 
         Page<LectureClass> lectureClassPage;
 
         // category + keyword 둘 다 있을 때
         if (hasCategory && hasKeyword) {
             lectureClassPage = lectureClassRepository
-                    .findByIsDeletedFalseAndCategoryAndTitleContaining(category, keyword, pageable);
+                    .findByIsDeletedFalseAndCategoryAndTitleContainingIgnoreSpace(category, keyword, pageable);
         } else if (hasCategory) { // category만 있을 때
             lectureClassPage = lectureClassRepository
                     .findByIsDeletedFalseAndCategory(category, pageable);
         } else if (hasKeyword) { // keyword만 있을 때
             lectureClassPage = lectureClassRepository
-                    .findByIsDeletedFalseAndTitleContaining(keyword, pageable);
+                    .findByIsDeletedFalseAndTitleContainingIgnoreSpace(keyword, pageable);
         } else { // 필터 없이 전체 조회
             lectureClassPage = lectureClassRepository
                     .findAllByIsDeletedFalse(pageable);
@@ -143,6 +148,24 @@ public class LectureClassServiceImpl implements LectureClassService {
 
 
         return PageResponseDto.from(result);
+    }
+
+    // 수강 중인 강좌인지 확인하는 메서드
+    @Override
+    public LectureCheckResponseDto checkLectureEnrollment(String userEmail, Long lectureClassId) {
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)); // 회원 조회
+
+        LectureClass lectureClass = lectureClassRepository.findByLectureClassIdAndIsDeletedFalse(lectureClassId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_CLASS_NOT_FOUND)); // 강좌 조회
+
+        boolean isEnrolled = lectureListRepository
+                .existsByUsers_UserIdAndLectureClass_LectureClassIdAndIsDeletedFalse(
+                        user.getUserId(),
+                        lectureClass.getLectureClassId()
+                );
+
+        return new LectureCheckResponseDto(isEnrolled);
     }
 
     @Override
