@@ -1,6 +1,7 @@
 package com.nyang.backend.lectureClass.repository;
 
 import com.nyang.backend.lectureClass.entity.LectureClass;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.user.entity.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,14 +23,14 @@ public interface LectureClassRepository extends JpaRepository<LectureClass, Long
     Page<LectureClass> findByTeacherAndIsDeletedFalse(Users teacher, Pageable pageable);
 
     // 삭제되지 않은 강좌 중 특정 카테고리에 해당하는 강좌 조회
-    Page<LectureClass> findByIsDeletedFalseAndCategory(String category, Pageable pageable);
+    Page<LectureClass> findByIsDeletedFalseAndCategory(LectureClassCategory category, Pageable pageable);
 
     // 삭제되지 않은 강좌 중 제목에 keyword가 포함된 강좌 조회
     Page<LectureClass> findByIsDeletedFalseAndTitleContaining(String keyword, Pageable pageable);
 
     // 삭제되지 않은 강좌 중 카테고리가 일치하고 제목에 keyword가 포함된 강좌 조회
     Page<LectureClass> findByIsDeletedFalseAndCategoryAndTitleContaining(
-            String category, String keyword, Pageable pageable
+            LectureClassCategory category, String keyword, Pageable pageable
     );
 
 }

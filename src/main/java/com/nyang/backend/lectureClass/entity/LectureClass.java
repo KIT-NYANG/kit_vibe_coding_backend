@@ -24,8 +24,9 @@ public class LectureClass {
     @Column(nullable = false, length = 200)
     private String title;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private String category;
+    private LectureClassCategory category;
 
     @Column(length = 1000)
     private String description;
@@ -43,7 +44,7 @@ public class LectureClass {
     public static LectureClass create(
             Users teacher,
             String title,
-            String category,
+            LectureClassCategory category,
             String description,
             String thumbnailPath
     ) {

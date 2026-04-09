@@ -1,5 +1,6 @@
 package com.nyang.backend.lectureList.repository;
 
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureClass.entity.QLectureClass;
 import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
 import com.nyang.backend.lectureList.entity.QLectureList;
@@ -25,7 +26,7 @@ public class LectureListRepositoryImpl implements LectureListRepositoryCustom {
     @Override
     public Page<MyLectureListResponseDto> findLectureListsByUserId(
             Long userId,
-            String category,
+            LectureClassCategory category,
             String keyword,
             Pageable pageable
     ) {
@@ -34,7 +35,7 @@ public class LectureListRepositoryImpl implements LectureListRepositoryCustom {
         QLectureClass lectureClass = QLectureClass.lectureClass;
 
         // category 값이 있으면 category로 필터링
-        BooleanExpression categoryCondition = hasText(category) ? lectureClass.category.eq(category) : null;
+        BooleanExpression categoryCondition = category != null ? lectureClass.category.eq(category) : null;
         // keyword 값이 있으면 title에 keyword가 포함된 강좌만 조회
         BooleanExpression keywordCondition = hasText(keyword) ? lectureClass.title.contains(keyword) : null;
 
@@ -45,7 +46,7 @@ public class LectureListRepositoryImpl implements LectureListRepositoryCustom {
                         lectureList.lectureListId,
                         lectureClass.lectureClassId,
                         lectureClass.title,
-                        lectureClass.category,
+                        lectureClass.category.stringValue(),
                         lectureClass.description,
                         lectureClass.thumbnailPath,
                         lectureList.createdAt

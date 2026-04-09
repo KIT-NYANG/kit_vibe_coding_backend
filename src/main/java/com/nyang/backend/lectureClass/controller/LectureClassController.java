@@ -9,6 +9,7 @@ import com.nyang.backend.lecture.dto.LectureResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassCreateRequestDto;
 import com.nyang.backend.lectureClass.dto.LectureClassListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureClass.service.LectureClassService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,7 @@ public class LectureClassController {
     public ResponseEntity<ResponseDto<PageResponseDto<LectureClassListResponseDto>>> getAllLectureClasses(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) LectureClassCategory category,
             @RequestParam(required = false) String keyword
     ) {
         PageResponseDto<LectureClassListResponseDto> result =

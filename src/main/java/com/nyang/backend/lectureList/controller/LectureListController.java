@@ -3,6 +3,7 @@ package com.nyang.backend.lectureList.controller;
 import com.nyang.backend.global.exception.SuccessCode;
 import com.nyang.backend.global.response.PageResponseDto;
 import com.nyang.backend.global.response.ResponseDto;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureList.dto.LectureEnrollmentRequestDto;
 import com.nyang.backend.lectureList.dto.MyLectureListResponseDto;
 import com.nyang.backend.lectureList.service.LectureListService;
@@ -36,7 +37,7 @@ public class LectureListController {
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) LectureClassCategory category,
             @RequestParam(required = false) String keyword
     ) {
         PageResponseDto<MyLectureListResponseDto> result =
@@ -50,7 +51,7 @@ public class LectureListController {
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) LectureClassCategory category,
             @RequestParam(required = false) String keyword
     ) {
         String userEmail = authentication.getName();

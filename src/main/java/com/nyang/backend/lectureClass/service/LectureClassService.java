@@ -5,6 +5,7 @@ import com.nyang.backend.lecture.dto.LectureListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassCreateRequestDto;
 import com.nyang.backend.lectureClass.dto.LectureClassListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface LectureClassService {
 
     // 전체 강좌 목록 조회
     PageResponseDto<LectureClassListResponseDto> getAllLectureClasses(
-            int page, int size, String category, String keyword
+            int page, int size, LectureClassCategory category, String keyword
     );
 
     // 현재 로그인한 강사가 등록한 본인 강좌 목록 조회

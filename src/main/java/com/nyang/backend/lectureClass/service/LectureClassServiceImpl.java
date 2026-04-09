@@ -10,6 +10,7 @@ import com.nyang.backend.lectureClass.dto.LectureClassCreateRequestDto;
 import com.nyang.backend.lectureClass.dto.LectureClassListResponseDto;
 import com.nyang.backend.lectureClass.dto.LectureClassResponseDto;
 import com.nyang.backend.lectureClass.entity.LectureClass;
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.lectureClass.repository.LectureClassRepository;
 import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
@@ -34,6 +35,7 @@ public class LectureClassServiceImpl implements LectureClassService {
     private final UsersRepository usersRepository;
     private final FileStorageService fileStorageService;
 
+    // 강좌 생성
     @Override
     @Transactional
     public LectureClassResponseDto createLectureClass(String userEmail, LectureClassCreateRequestDto requestDto) {
@@ -61,14 +63,15 @@ public class LectureClassServiceImpl implements LectureClassService {
         return LectureClassResponseDto.from(savedLectureClass);
     }
 
+    // 모든 강좌 조회
     @Override
     public PageResponseDto<LectureClassListResponseDto> getAllLectureClasses(
-            int page, int size, String category, String keyword
+            int page, int size, LectureClassCategory category, String keyword
     ) {
         // 페이지 번호, 크기, 정렬 조건 설정
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        boolean hasCategory = category != null && !category.trim().isEmpty();
+        boolean hasCategory = category != null;
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
 
         Page<LectureClass> lectureClassPage;

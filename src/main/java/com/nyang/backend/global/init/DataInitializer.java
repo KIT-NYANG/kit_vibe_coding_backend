@@ -1,5 +1,6 @@
 package com.nyang.backend.global.init;
 
+import com.nyang.backend.lectureClass.entity.LectureClassCategory;
 import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
@@ -73,16 +74,16 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         List<LectureClassSeed> lectureClassSeeds = List.of(
-                new LectureClassSeed("스프링 부트 입문", "백엔드", "스프링 부트 기초를 배우는 강좌", "/test/thumbnails/class1.jpg"),
-                new LectureClassSeed("자바 객체지향 프로그래밍", "백엔드", "자바 OOP 핵심 개념을 배우는 강좌", "/test/thumbnails/class2.jpg"),
-                new LectureClassSeed("웹 보안 기초", "보안", "웹 보안의 기본 개념을 배우는 강좌", "/test/thumbnails/class3.jpg"),
-                new LectureClassSeed("데이터베이스 입문", "백엔드", "데이터베이스와 SQL 기초 강좌", "/test/thumbnails/class4.jpg"),
-                new LectureClassSeed("리눅스 기초", "인프라", "리눅스 기본 명령어와 환경 설정", "/test/thumbnails/class5.jpg"),
-                new LectureClassSeed("네트워크 개론", "인프라", "네트워크의 기본 구조와 원리", "/test/thumbnails/class6.jpg"),
-                new LectureClassSeed("알고리즘 기초", "CS", "기초 알고리즘 문제 해결", "/test/thumbnails/class7.jpg"),
-                new LectureClassSeed("자료구조 입문", "CS", "스택, 큐, 트리 등 자료구조 학습", "/test/thumbnails/class8.jpg"),
-                new LectureClassSeed("프론트엔드 HTML/CSS", "프론트엔드", "웹 화면 구성의 기초", "/test/thumbnails/class9.jpg"),
-                new LectureClassSeed("자바스크립트 입문", "프론트엔드", "자바스크립트 기본 문법과 DOM", "/test/thumbnails/class10.jpg")
+                new LectureClassSeed("스프링 부트 입문", LectureClassCategory.BACKEND, "스프링 부트 기초를 배우는 강좌", "/test/thumbnails/class1.jpg"),
+                new LectureClassSeed("자바 객체지향 프로그래밍", LectureClassCategory.BACKEND, "자바 OOP 핵심 개념을 배우는 강좌", "/test/thumbnails/class2.jpg"),
+                new LectureClassSeed("AI 기초", LectureClassCategory.AI, "AI의 기본 개념을 배우는 강좌", "/test/thumbnails/class3.jpg"),
+                new LectureClassSeed("데이터베이스 입문", LectureClassCategory.BACKEND, "데이터베이스와 SQL 기초 강좌", "/test/thumbnails/class4.jpg"),
+                new LectureClassSeed("리눅스 기초", LectureClassCategory.INFRA, "리눅스 기본 명령어와 환경 설정", "/test/thumbnails/class5.jpg"),
+                new LectureClassSeed("네트워크 개론", LectureClassCategory.INFRA, "네트워크의 기본 구조와 원리", "/test/thumbnails/class6.jpg"),
+                new LectureClassSeed("알고리즘 기초", LectureClassCategory.CS, "기초 알고리즘 문제 해결", "/test/thumbnails/class7.jpg"),
+                new LectureClassSeed("자료구조 입문", LectureClassCategory.CS, "스택, 큐, 트리 등 자료구조 학습", "/test/thumbnails/class8.jpg"),
+                new LectureClassSeed("프론트엔드 HTML/CSS", LectureClassCategory.FRONTEND, "웹 화면 구성의 기초", "/test/thumbnails/class9.jpg"),
+                new LectureClassSeed("자바스크립트 입문", LectureClassCategory.FRONTEND, "자바스크립트 기본 문법과 DOM", "/test/thumbnails/class10.jpg")
         );
 
         List<LectureClass> savedLectureClasses = new ArrayList<>();
@@ -122,7 +123,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private record LectureClassSeed(
             String title,
-            String category,
+            LectureClassCategory category,
             String description,
             String thumbnailPath
     ) {
