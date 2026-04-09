@@ -29,7 +29,7 @@ public class SttClientService {
         builder.part("file", resource);
 
         return sttWebClient.post()
-                .uri("/api/stt/transcribe")
+                .uri("/api/stt/transcribe-and-pre-analyze")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()

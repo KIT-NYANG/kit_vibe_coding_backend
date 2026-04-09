@@ -1,18 +1,19 @@
 package com.nyang.backend.lecture.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nyang.backend.global.exception.BusinessException;
 import com.nyang.backend.global.exception.ErrorCode;
 import com.nyang.backend.global.response.PageResponseDto;
-import com.nyang.backend.lecture.dto.LectureCreateRequestDto;
-import com.nyang.backend.lecture.dto.LectureListResponseDto;
-import com.nyang.backend.lecture.dto.LectureResponseDto;
+import com.nyang.backend.lecture.dto.*;
 import com.nyang.backend.lecture.entity.Lecture;
 import com.nyang.backend.lecture.event.LectureCreatedEvent;
 import com.nyang.backend.lecture.repository.LectureRepository;
 import com.nyang.backend.lecture.storage.FileStorageService;
-import com.nyang.backend.lecture.dto.StoredVideoInfo;
 import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.lectureClass.repository.LectureClassRepository;
+import com.nyang.backend.lectureLog.entity.LectureLogAnalysis;
+import com.nyang.backend.lectureLog.repository.LectureLogAnalysisRepository;
 import com.nyang.backend.user.entity.Role;
 import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +43,8 @@ public class LectureServiceImpl implements LectureService {
     private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
     private final LectureSttService lectureSttService;
+    private final LectureLogAnalysisRepository lectureLogAnalysisRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -131,7 +135,34 @@ public class LectureServiceImpl implements LectureService {
         Lecture lecture = lectureRepository.findByLectureIdAndIsDeletedFalse(lectureId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
 
-        return LectureResponseDto.from(lecture);
+        AnalysisDto analysisDto = null;
+
+        Optional<LectureLogAnalysis> analysisOpt =
+                lectureLogAnalysisRepository.findByLecture_LectureId(lectureId);
+
+        if (analysisOpt.isPresent()) {
+            LectureLogAnalysis analysis = analysisOpt.get();
+
+            try {
+                if (analysis.getAggregateResultJson() != null && !analysis.getAggregateResultJson().isBlank()) {
+                    AggAnalysisDto aggAnalysisDto = objectMapper.readValue(
+                            analysis.getAggregateResultJson(),
+                            AggAnalysisDto.class
+                    );
+                    analysisDto = toAnalysisDto(aggAnalysisDto);
+                } else if (analysis.getPreResultJson() != null && !analysis.getPreResultJson().isBlank()) {
+                    PreAnalysisDto preAnalysisDto = objectMapper.readValue(
+                            analysis.getPreResultJson(),
+                            PreAnalysisDto.class
+                    );
+                    analysisDto = toAnalysisDto(preAnalysisDto);
+                }
+            } catch (JsonProcessingException e) {
+                throw new BusinessException(ErrorCode.JSON_SERIALIZATION_ERROR);
+            }
+        }
+
+        return LectureResponseDto.from(lecture, analysisDto);
     }
 
     @Override
@@ -222,5 +253,18 @@ public class LectureServiceImpl implements LectureService {
         } catch (IOException e) {
             throw new BusinessException(ErrorCode.VIDEO_SAVE_FAILED);
         }
+    }
+
+    private AnalysisDto toAnalysisDto(PreAnalysisDto preAnalysisDto) {
+        return AnalysisDto.builder()
+                .quizzes(preAnalysisDto.getQuizzes())
+                .teacherGuides(preAnalysisDto.getTeacherGuides())
+                .build();
+    }
+    private AnalysisDto toAnalysisDto(AggAnalysisDto aggAnalysisDto) {
+        return AnalysisDto.builder()
+                .quizzes(aggAnalysisDto.getQuizzes())
+                .teacherGuides(aggAnalysisDto.getTeacherGuides())
+                .build();
     }
 }

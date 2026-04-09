@@ -20,4 +20,7 @@ public class SttResponseDto {
     private List<SttSegmentDto> segments;
 
     private SttSummaryDto summarize;
+
+    @JsonProperty("pre_analysis")
+    private PreAnalysisDto preAnalysis;
 }

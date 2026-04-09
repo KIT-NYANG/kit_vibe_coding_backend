@@ -45,8 +45,9 @@ public enum ErrorCode {
     LECTURE_LIST_NOT_FOUND(404, "LECTURE_LIST001", "존재하지 않는 수강 기록입니다."),
     LECTURE_ALREADY_ENROLLED(409, "LECTURE_LIST002", "이미 수강 신청한 강의입니다."),
     INVALID_WATCH_TIME(400, "LECTURE_LIST004", "시청 시간은 0 이상이어야 합니다."),
-    INVALID_LECTURE_DURATION(400, "LECTURE_LIST005", "강의 영상 길이가 올바르지 않습니다.");
+    INVALID_LECTURE_DURATION(400, "LECTURE_LIST005", "강의 영상 길이가 올바르지 않습니다."),
 
+    JSON_SERIALIZATION_ERROR(500,"JSONERROR1","JSON직렬화 실패");
     private final int status;
     private final String code;
     private final String message;

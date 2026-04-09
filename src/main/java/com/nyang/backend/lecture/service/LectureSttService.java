@@ -1,12 +1,17 @@
 package com.nyang.backend.lecture.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nyang.backend.global.exception.BusinessException;
 import com.nyang.backend.global.exception.ErrorCode;
+import com.nyang.backend.lecture.dto.PreAnalysisDto;
 import com.nyang.backend.lecture.dto.SttResponseDto;
 import com.nyang.backend.lecture.entity.Lecture;
 import com.nyang.backend.lecture.entity.LectureTranscriptSegment;
 import com.nyang.backend.lecture.repository.LectureRepository;
 import com.nyang.backend.lecture.repository.LectureTranscriptSegmentRepository;
+import com.nyang.backend.lectureLog.entity.LectureLogAnalysis;
+import com.nyang.backend.lectureLog.repository.LectureLogAnalysisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +29,8 @@ public class LectureSttService {
     private final LectureRepository lectureRepository;
     private final LectureTranscriptSegmentRepository segmentRepository;
     private final SttClientService sttClientService;
+    private final LectureLogAnalysisRepository lectureLogAnalysisRepository;
+    private final ObjectMapper objectMapper;
 
     public void requestSttAsync(Long lectureId, File tempFile) {
         Lecture lecture = lectureRepository.findById(lectureId)
@@ -127,6 +134,22 @@ public class LectureSttService {
                 LocalDateTime.now()
         );
         lectureRepository.save(lecture);
+        savePreAnalysis(lecture, response.getPreAnalysis());
+    }
+    private void savePreAnalysis(Lecture lecture, PreAnalysisDto preAnalysis) {
+        if (preAnalysis == null) {
+            return;
+        }
+        LectureLogAnalysis analysis = lectureLogAnalysisRepository.findByLecture_LectureId(lecture.getLectureId())
+                .orElseGet(() -> LectureLogAnalysis.create(lecture));
+
+        try {
+            String preResultJson = objectMapper.writeValueAsString(preAnalysis);
+            analysis.updatePreResult(preResultJson);
+            lectureLogAnalysisRepository.save(analysis);
+        } catch (JsonProcessingException e) {
+            throw new BusinessException(ErrorCode.JSON_SERIALIZATION_ERROR);
+        }
     }
 
     @Transactional
