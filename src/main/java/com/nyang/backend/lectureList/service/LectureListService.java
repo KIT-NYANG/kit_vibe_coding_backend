@@ -71,7 +71,7 @@ public class LectureListService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        keyword = (keyword == null) ? null : keyword.trim();
+        keyword = (keyword == null) ? null : keyword.replaceAll("\\s+", "").trim();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -93,7 +93,7 @@ public class LectureListService {
         Users user = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        keyword = (keyword == null) ? null : keyword.trim();
+        keyword = (keyword == null) ? null : keyword.replaceAll("\\s+", "").trim();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 

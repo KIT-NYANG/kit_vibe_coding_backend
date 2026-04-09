@@ -74,20 +74,20 @@ public class LectureClassServiceImpl implements LectureClassService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         boolean hasCategory = category != null;
-        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasKeyword = keyword != null && !keyword.replaceAll("\\s+", "").trim().isEmpty();
 
         Page<LectureClass> lectureClassPage;
 
         // category + keyword 둘 다 있을 때
         if (hasCategory && hasKeyword) {
             lectureClassPage = lectureClassRepository
-                    .findByIsDeletedFalseAndCategoryAndTitleContaining(category, keyword, pageable);
+                    .findByIsDeletedFalseAndCategoryAndTitleContainingIgnoreSpace(category, keyword, pageable);
         } else if (hasCategory) { // category만 있을 때
             lectureClassPage = lectureClassRepository
                     .findByIsDeletedFalseAndCategory(category, pageable);
         } else if (hasKeyword) { // keyword만 있을 때
             lectureClassPage = lectureClassRepository
-                    .findByIsDeletedFalseAndTitleContaining(keyword, pageable);
+                    .findByIsDeletedFalseAndTitleContainingIgnoreSpace(keyword, pageable);
         } else { // 필터 없이 전체 조회
             lectureClassPage = lectureClassRepository
                     .findAllByIsDeletedFalse(pageable);
