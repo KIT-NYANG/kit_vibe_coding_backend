@@ -25,4 +25,10 @@ public class WebClientConfig {
                 .exchangeStrategies(exchangeStrategies)
                 .build();
     }
+    @Bean
+    public WebClient lectureAiWebClient(@Value("${ai.lecture.base-url}") String baseUrl) {
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .build();
+    }
 }

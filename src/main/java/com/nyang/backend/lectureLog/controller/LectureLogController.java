@@ -60,30 +60,5 @@ public class LectureLogController {
         return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK,response));
     }
 
-    /**
-     * 로그 쌓이기 전 사전 분석
-     * STT segment만 가지고 퀴즈 위치 / 퀴즈 / 해설 / 교사용 가이드 생성
-     */
-    @PostMapping("/analysis/pre")
-    public ResponseEntity<ResponseDto<LecturePreAnalysisResponseDto>> requestPreAnalysis(
-            @PathVariable Long lectureId,
-            @RequestBody(required = false) LecturePreAnalysisRequestDto requestDto
-    ) {
-        String additionalPrompt = requestDto != null ? requestDto.getAdditionalPrompt() : null;
 
-        LecturePreAnalysisResponseDto response =
-                lectureLogService.requestPreAnalysis(lectureId, additionalPrompt);
-
-        return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK,response));
-    }
-
-    @PostMapping("/analysis/aggregate")
-    public ResponseEntity<ResponseDto<LectureAggregateAnalysisResponseDto>> requestAggregateAnalysis(
-            @PathVariable Long lectureId
-    ) {
-        LectureAggregateAnalysisResponseDto response =
-                lectureLogService.requestAggregateAnalysis(lectureId);
-
-        return ResponseEntity.ok(ResponseDto.success(SuccessCode.OK,response));
-    }
 }

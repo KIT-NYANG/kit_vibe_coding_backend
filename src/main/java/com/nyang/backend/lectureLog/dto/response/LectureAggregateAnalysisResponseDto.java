@@ -9,9 +9,6 @@ import java.util.List;
 @Builder
 public class LectureAggregateAnalysisResponseDto {
 
-    private Long analysisId;
-    private Long lectureId;
-    private Integer analyzedLogCount;
     private List<QuizItemResponseDto> quizzes;
     private List<TeacherGuideResponseDto> teacherGuides;
 }

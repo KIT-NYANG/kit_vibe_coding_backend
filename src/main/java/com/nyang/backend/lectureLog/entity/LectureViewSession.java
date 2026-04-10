@@ -173,5 +173,8 @@ public class LectureViewSession {
                 || this.heartbeatCount >= 3
                 || this.totalWatchTimeSec >= 30
                 || this.lastPositionSec >= 60;
+//                || this.heartbeatCount >= 0
+//                || this.totalWatchTimeSec >= 0
+//                || this.lastPositionSec >= 0;
     }
 }

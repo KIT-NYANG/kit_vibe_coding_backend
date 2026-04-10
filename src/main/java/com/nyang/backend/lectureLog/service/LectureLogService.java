@@ -128,60 +128,6 @@ public class LectureLogService {
     /**
      * STT 기반 사전 분석
      */
-    @Transactional
-    public LecturePreAnalysisResponseDto requestPreAnalysis(Long lectureId, String additionalPrompt) {
-        Lecture lecture = getLectureById(lectureId);
-
-        List<LectureTranscriptSegment> segments =
-                lectureTranscriptSegmentReadRepository.findByLecture_LectureIdOrderBySegmentIndexAsc(lectureId);
-
-        if (segments.isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
-        }
-
-        LectureLogAnalysis analysis = lectureLogAnalysisRepository.findByLecture_LectureId(lectureId)
-                .orElseGet(() -> lectureLogAnalysisRepository.save(LectureLogAnalysis.create(lecture)));
-
-        LecturePreAnalysisResponseDto responseDto =
-                lectureAiClient.requestPreAnalysis(lectureId, segments, additionalPrompt);
-
-        String resultJson = lectureAiClient.toJson(responseDto);
-        analysis.updatePreResult(resultJson);
-
-        return LecturePreAnalysisResponseDto.builder()
-                .analysisId(analysis.getId())
-                .lectureId(responseDto.getLectureId())
-                .quizzes(responseDto.getQuizzes())
-                .teacherGuides(responseDto.getTeacherGuides())
-                .build();
-    }
-
-    /**
-     * 수동 aggregate 분석 API
-     */
-    @Transactional
-    public LectureAggregateAnalysisResponseDto requestAggregateAnalysis(Long lectureId) {
-        Lecture lecture = getLectureById(lectureId);
-
-        LectureLogAnalysis analysis = lectureLogAnalysisRepository.findByLecture_LectureId(lectureId)
-                .orElseGet(() -> lectureLogAnalysisRepository.save(LectureLogAnalysis.create(lecture)));
-
-        long validSessionCount = getValidSessionCount(lectureId);
-
-        LectureAggregateAnalysisResponseDto responseDto =
-                executeAggregateAnalysis(lectureId);
-
-        String resultJson = lectureAiClient.toJson(responseDto);
-        analysis.updateAggregateResult(resultJson, (int) validSessionCount);
-
-        return LectureAggregateAnalysisResponseDto.builder()
-                .analysisId(analysis.getId())
-                .lectureId(responseDto.getLectureId())
-                .analyzedLogCount(responseDto.getAnalyzedLogCount())
-                .quizzes(responseDto.getQuizzes())
-                .teacherGuides(responseDto.getTeacherGuides())
-                .build();
-    }
 
     /**
      * 자동 aggregate 분석 트리거
@@ -189,32 +135,32 @@ public class LectureLogService {
      */
     @Transactional
     public void triggerAggregateAnalysisIfNeeded(Long lectureId) {
-        Lecture lecture = getLectureById(lectureId);
-
-        long validSessionCount = getValidSessionCount(lectureId);
+        int validSessionCount = Math.toIntExact(getValidSessionCount(lectureId));
         int triggerUnit = resolveAggregateTriggerUnit(validSessionCount);
 
         if (triggerUnit == 0) {
             return;
         }
 
-        LectureLogAnalysis analysis = lectureLogAnalysisRepository.findByLecture_LectureId(lectureId)
-                .orElseGet(() -> lectureLogAnalysisRepository.save(LectureLogAnalysis.create(lecture)));
+        LectureLogAnalysis analysis = getOrCreateLectureLogAnalysis(lectureId);
 
         if (analysis.getLastAggregatedSessionCount() >= triggerUnit) {
             return;
         }
 
-        LectureAggregateAnalysisResponseDto responseDto = executeAggregateAnalysis(lectureId);
-        String resultJson = lectureAiClient.toJson(responseDto);
+        LectureAggregateAnalysisResponseDto responseDto = tryExecuteAggregateAnalysis(lectureId);
+        if (responseDto == null) {
+            return;
+        }
 
+        String resultJson = lectureAiClient.toJson(responseDto);
         analysis.updateAggregateResult(resultJson, triggerUnit);
     }
 
     /**
      * 실제 aggregate 분석 수행 본체
      */
-    private LectureAggregateAnalysisResponseDto executeAggregateAnalysis(Long lectureId) {
+    private LectureAggregateAnalysisResponseDto tryExecuteAggregateAnalysis(Long lectureId) {
         List<LectureViewSession> allSessions = lectureViewSessionRepository.findByLecture_LectureId(lectureId);
 
         List<LectureViewSession> validSessions = allSessions.stream()
@@ -222,7 +168,7 @@ public class LectureLogService {
                 .toList();
 
         if (validSessions.isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+            return null;
         }
 
         Set<String> validSessionIds = validSessions.stream()
@@ -236,37 +182,37 @@ public class LectureLogService {
                 .toList();
 
         if (logs.isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+            return null;
         }
 
         List<LectureTranscriptSegment> allSegments =
                 lectureTranscriptSegmentReadRepository.findByLecture_LectureIdOrderBySegmentIndexAsc(lectureId);
 
         if (allSegments.isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+            return null;
         }
 
         List<CandidateRangeDto> candidateRanges = buildCandidateRanges(logs);
 
         if (candidateRanges.isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+            return null;
         }
 
-        List<LectureTranscriptSegment> filteredSegments =
-                filterTranscriptSegments(allSegments, candidateRanges);
-
         LectureAggregateAnalysisResponseDto responseDto =
-                lectureAiClient.requestAggregateAnalysis(lectureId, candidateRanges, filteredSegments);
+                lectureAiClient.requestAggregateAnalysis(candidateRanges, allSegments);
 
         return LectureAggregateAnalysisResponseDto.builder()
-                .analysisId(null)
-                .lectureId(responseDto.getLectureId())
-                .analyzedLogCount(logs.size())
                 .quizzes(responseDto.getQuizzes())
                 .teacherGuides(responseDto.getTeacherGuides())
                 .build();
     }
-
+    private LectureLogAnalysis getOrCreateLectureLogAnalysis(Long lectureId) {
+        return lectureLogAnalysisRepository.findByLecture_LectureId(lectureId)
+                .orElseGet(() -> {
+                    Lecture lecture = getLectureById(lectureId);
+                    return lectureLogAnalysisRepository.save(LectureLogAnalysis.create(lecture));
+                });
+    }
     /**
      * 유효 session 수 계산
      */
@@ -279,18 +225,35 @@ public class LectureLogService {
     /**
      * 10, 100, 1000 ... 단위 자동 분석 기준 계산
      */
+//    private int resolveAggregateTriggerUnit(long validSessionCount) {
+//        if (validSessionCount < 10) {
+//            return 0;
+//        }
+//
+//        int unit = 10;
+//        while (validSessionCount >= (long) unit * 10) {
+//            unit *= 10;
+//        }
+//        return unit;
+//    }
+    private static final int INITIAL_AGGREGATE_EVERY_COUNT = 5;
+    private static final int AGGREGATE_BATCH_SIZE = 10;
+
     private int resolveAggregateTriggerUnit(long validSessionCount) {
-        if (validSessionCount < 10) {
+        if (validSessionCount <= 0) {
             return 0;
         }
 
-        int unit = 10;
-        while (validSessionCount >= (long) unit * 10) {
-            unit *= 10;
+        if (validSessionCount <= INITIAL_AGGREGATE_EVERY_COUNT) {
+            return (int) validSessionCount;
         }
-        return unit;
-    }
 
+        if (validSessionCount % AGGREGATE_BATCH_SIZE == 0) {
+            return (int) validSessionCount;
+        }
+
+        return 0;
+    }
     private static class BucketStat {
         int startSec;
         int endSec;
