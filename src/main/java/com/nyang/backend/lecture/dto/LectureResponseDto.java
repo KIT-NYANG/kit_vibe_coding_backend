@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -28,8 +29,9 @@ public class LectureResponseDto {
     private String sttErrorMessage;
     private LocalDateTime sttCompletedAt;
     private AnalysisDto analysis;
+    private List<LectureSegmentResponseDto> segments;
 
-    public static LectureResponseDto from(Lecture lecture, AnalysisDto analysis) {
+    public static LectureResponseDto from(Lecture lecture, AnalysisDto analysis,List<LectureSegmentResponseDto> segments) {
         return LectureResponseDto.builder()
                 .lectureId(lecture.getLectureId())
                 .teacherName(lecture.getTeacher().getName())
@@ -47,6 +49,7 @@ public class LectureResponseDto {
                 .sttCompletedAt(lecture.getSttCompletedAt())
                 .sttErrorMessage(lecture.getSttErrorMessage())
                 .analysis(analysis)
+                .segments(segments)
                 .createdAt(lecture.getCreatedAt())
                 .build();
     }

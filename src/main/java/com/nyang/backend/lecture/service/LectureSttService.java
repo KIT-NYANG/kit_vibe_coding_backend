@@ -6,6 +6,7 @@ import com.nyang.backend.global.exception.BusinessException;
 import com.nyang.backend.global.exception.ErrorCode;
 import com.nyang.backend.lecture.dto.PreAnalysisDto;
 import com.nyang.backend.lecture.dto.SttResponseDto;
+import com.nyang.backend.lecture.dto.SttSegmentDto;
 import com.nyang.backend.lecture.entity.Lecture;
 import com.nyang.backend.lecture.entity.LectureTranscriptSegment;
 import com.nyang.backend.lecture.repository.LectureRepository;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -103,17 +105,9 @@ public class LectureSttService {
         Lecture lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
 
-        List<LectureTranscriptSegment> segments = response.getSegments().stream()
-                .map(segment -> LectureTranscriptSegment.builder()
-                        .lecture(lecture)
-                        .segmentIndex(segment.getIndex())
-                        .startMs(toMs(segment.getStart()))
-                        .endMs(toMs(segment.getEnd()))
-                        .text(segment.getText())
-                        .build())
-                .toList();
+        List<LectureTranscriptSegment> mergedSegments = mergeSegmentsForCaption(lecture, response.getSegments());
 
-        segmentRepository.saveAll(segments);
+        segmentRepository.saveAll(mergedSegments);
 
         String summaryText = null;
         String summaryKeywords = null;
@@ -135,6 +129,84 @@ public class LectureSttService {
         );
         lectureRepository.save(lecture);
         savePreAnalysis(lecture, response.getPreAnalysis());
+    }
+
+    private List<LectureTranscriptSegment> mergeSegmentsForCaption(
+            Lecture lecture,
+            List<SttSegmentDto> rawSegments
+    ) {
+        if (rawSegments == null || rawSegments.isEmpty()) {
+            return List.of();
+        }
+
+        final double MAX_GAP_SEC = 0.8;          // 앞뒤 자막 간 간격이 이하면 합침
+        final int SHORT_TEXT_LENGTH = 12;        // 너무 짧은 자막이면 합침 시도
+        final int MAX_TEXT_LENGTH = 45;          // 너무 길어지면 합치지 않음
+        final double MAX_DURATION_SEC = 8.0;     // 한 자막 구간이 너무 길어지면 끊음
+
+        List<LectureTranscriptSegment> result = new ArrayList<>();
+
+        SttSegmentDto current = rawSegments.get(0);
+        int mergedIndex = 0;
+
+        double currentStart = current.getStart();
+        double currentEnd = current.getEnd();
+        String currentText = normalizeText(current.getText());
+
+        for (int i = 1; i < rawSegments.size(); i++) {
+            SttSegmentDto next = rawSegments.get(i);
+
+            double nextStart = next.getStart();
+            double nextEnd = next.getEnd();
+            String nextText = normalizeText(next.getText());
+
+            double gap = nextStart - currentEnd;
+            String mergedTextCandidate = currentText + " " + nextText;
+            double mergedDuration = nextEnd - currentStart;
+
+            boolean shouldMerge =
+                    gap <= MAX_GAP_SEC &&
+                            (
+                                    currentText.length() <= SHORT_TEXT_LENGTH ||
+                                            nextText.length() <= SHORT_TEXT_LENGTH
+                            ) &&
+                            mergedTextCandidate.length() <= MAX_TEXT_LENGTH &&
+                            mergedDuration <= MAX_DURATION_SEC;
+
+            if (shouldMerge) {
+                currentEnd = nextEnd;
+                currentText = mergedTextCandidate.trim();
+            } else {
+                result.add(LectureTranscriptSegment.builder()
+                        .lecture(lecture)
+                        .segmentIndex(mergedIndex++)
+                        .startMs(toMs(currentStart))
+                        .endMs(toMs(currentEnd))
+                        .text(currentText)
+                        .build());
+
+                currentStart = nextStart;
+                currentEnd = nextEnd;
+                currentText = nextText;
+            }
+        }
+
+        result.add(LectureTranscriptSegment.builder()
+                .lecture(lecture)
+                .segmentIndex(mergedIndex)
+                .startMs(toMs(currentStart))
+                .endMs(toMs(currentEnd))
+                .text(currentText)
+                .build());
+
+        return result;
+    }
+
+    private String normalizeText(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.trim().replaceAll("\\s+", " ");
     }
     private void savePreAnalysis(Lecture lecture, PreAnalysisDto preAnalysis) {
         if (preAnalysis == null) {

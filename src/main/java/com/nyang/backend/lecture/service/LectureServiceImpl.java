@@ -9,6 +9,7 @@ import com.nyang.backend.lecture.dto.*;
 import com.nyang.backend.lecture.entity.Lecture;
 import com.nyang.backend.lecture.event.LectureCreatedEvent;
 import com.nyang.backend.lecture.repository.LectureRepository;
+import com.nyang.backend.lecture.repository.LectureTranscriptSegmentRepository;
 import com.nyang.backend.lecture.storage.FileStorageService;
 import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.lectureClass.repository.LectureClassRepository;
@@ -45,7 +46,7 @@ public class LectureServiceImpl implements LectureService {
     private final LectureSttService lectureSttService;
     private final LectureLogAnalysisRepository lectureLogAnalysisRepository;
     private final ObjectMapper objectMapper;
-
+    private final LectureTranscriptSegmentRepository lectureTranscriptSegmentRepository;
     @Override
     @Transactional
     public LectureResponseDto createLecture(String userEmail, LectureCreateRequestDto requestDto) {
@@ -162,7 +163,13 @@ public class LectureServiceImpl implements LectureService {
             }
         }
 
-        return LectureResponseDto.from(lecture, analysisDto);
+        List<LectureSegmentResponseDto> segments = lectureTranscriptSegmentRepository
+                .findByLecture_LectureIdOrderBySegmentIndexAsc(lectureId)
+                .stream()
+                .map(LectureSegmentResponseDto::from)
+                .toList();
+
+        return LectureResponseDto.from(lecture, analysisDto, segments);
     }
 
     @Override
