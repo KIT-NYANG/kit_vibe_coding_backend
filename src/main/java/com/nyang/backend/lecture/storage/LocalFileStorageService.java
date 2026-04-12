@@ -1,10 +1,12 @@
 package com.nyang.backend.lecture.storage;
+
 import com.nyang.backend.global.exception.BusinessException;
 import com.nyang.backend.global.exception.ErrorCode;
-import com.nyang.backend.lecture.service.VideoMetadataService;
 import com.nyang.backend.lecture.dto.StoredVideoInfo;
+import com.nyang.backend.lecture.service.VideoMetadataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +16,7 @@ import java.nio.file.*;
 import java.util.UUID;
 
 @Service
+@Profile("dev")
 @RequiredArgsConstructor
 public class LocalFileStorageService implements FileStorageService {
 
