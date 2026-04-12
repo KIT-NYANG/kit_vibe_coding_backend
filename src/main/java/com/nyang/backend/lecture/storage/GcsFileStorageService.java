@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -39,18 +40,18 @@ public class GcsFileStorageService implements FileStorageService {
             throw new BusinessException(ErrorCode.VIDEO_FILE_REQUIRED);
         }
 
-        Path tempFile = null;
+        File tempFile = null;
 
         try {
             String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
             String savedFilename = UUID.randomUUID() + "_" + originalFilename;
             String objectName = "videos/" + savedFilename;
 
-            tempFile = Files.createTempFile("video-", "-" + originalFilename);
-            file.transferTo(tempFile.toFile());
+            tempFile = File.createTempFile("video-", "-" + originalFilename);
+            file.transferTo(tempFile);
 
             int durationSeconds = videoMetadataService.extractDurationSeconds(
-                    tempFile.toAbsolutePath().toString()
+                    tempFile.getAbsolutePath()
             );
 
             BlobInfo blobInfo = BlobInfo.newBuilder(
@@ -58,21 +59,15 @@ public class GcsFileStorageService implements FileStorageService {
                     .setContentType(file.getContentType())
                     .build();
 
-            storage.create(blobInfo, Files.readAllBytes(tempFile));
+            // 기존 방식보다 이쪽이 더 나음
+            storage.createFrom(blobInfo, tempFile.toPath());
 
             String videoUrl = buildPublicUrl(bucketName, objectName);
 
-            return new StoredVideoInfo(videoUrl, durationSeconds);
+            return new StoredVideoInfo(videoUrl, durationSeconds, tempFile);
 
         } catch (IOException e) {
             throw new BusinessException(ErrorCode.VIDEO_SAVE_FAILED);
-        } finally {
-            if (tempFile != null) {
-                try {
-                    Files.deleteIfExists(tempFile);
-                } catch (IOException ignored) {
-                }
-            }
         }
     }
 
