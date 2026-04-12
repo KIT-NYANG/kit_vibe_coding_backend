@@ -66,7 +66,11 @@ public class SecurityConfig {
         // React 개발 서버 주소 허용
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "https://frontend-663184431771.asia-northeast1.run.app",
+                "https://nacom.kr",
+                "https://www.nacom.kr",
+                "https://api.nacom.kr"
         ));
 
         // 허용할 HTTP 메서드
