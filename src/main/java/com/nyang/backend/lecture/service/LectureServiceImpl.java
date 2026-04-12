@@ -139,10 +139,9 @@ public class LectureServiceImpl implements LectureService {
 
         Optional<LectureLogAnalysis> analysisOpt =
                 lectureLogAnalysisRepository.findByLecture_LectureId(lectureId);
-
+        Boolean logAnalysis = Boolean.FALSE;
         if (analysisOpt.isPresent()) {
             LectureLogAnalysis analysis = analysisOpt.get();
-
             try {
                 if (analysis.getAggregateResultJson() != null && !analysis.getAggregateResultJson().isBlank()) {
                     AggAnalysisDto aggAnalysisDto = objectMapper.readValue(
@@ -150,6 +149,7 @@ public class LectureServiceImpl implements LectureService {
                             AggAnalysisDto.class
                     );
                     analysisDto = toAnalysisDto(aggAnalysisDto);
+                    logAnalysis=Boolean.TRUE;
                 } else if (analysis.getPreResultJson() != null && !analysis.getPreResultJson().isBlank()) {
                     PreAnalysisDto preAnalysisDto = objectMapper.readValue(
                             analysis.getPreResultJson(),
@@ -168,7 +168,7 @@ public class LectureServiceImpl implements LectureService {
                 .map(LectureSegmentResponseDto::from)
                 .toList();
 
-        return LectureResponseDto.from(lecture, analysisDto, segments);
+        return LectureResponseDto.from(lecture, analysisDto, segments, logAnalysis);
     }
 
     @Override
