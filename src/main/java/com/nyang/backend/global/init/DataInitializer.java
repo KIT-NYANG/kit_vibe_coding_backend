@@ -6,6 +6,7 @@ import com.nyang.backend.user.entity.Users;
 import com.nyang.backend.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import com.nyang.backend.lecture.entity.Lecture;
@@ -15,7 +16,7 @@ import com.nyang.backend.lectureClass.repository.LectureClassRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Profile("dev")
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {

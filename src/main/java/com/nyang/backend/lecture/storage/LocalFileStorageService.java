@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.UUID;
@@ -28,15 +29,17 @@ public class LocalFileStorageService implements FileStorageService {
     @Override
     public StoredVideoInfo saveVideo(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new BusinessException(ErrorCode.VIDEO_FILE_REQUIRED);
+            throw new BusinessException(ErrorCode.VIDEO_SAVE_FAILED);
         }
+
+        File tempFile = null;
 
         try {
             Path dirPath = Paths.get(uploadDir, "videos");
             Files.createDirectories(dirPath);
 
             String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-            String savedFilename = UUID.randomUUID() + "_" + originalFilename;
+            String savedFilename = UUID.randomUUID() + "" + originalFilename;
 
             Path targetPath = dirPath.resolve(savedFilename);
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
@@ -47,7 +50,15 @@ public class LocalFileStorageService implements FileStorageService {
 
             String videoPath = "/uploads/videos/" + savedFilename;
 
-            return new StoredVideoInfo(videoPath, durationSeconds);
+            String suffix = ".tmp";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            tempFile = File.createTempFile("stt-upload-", suffix);
+            file.transferTo(tempFile);
+
+            return new StoredVideoInfo(videoPath, durationSeconds, tempFile);
 
         } catch (IOException e) {
             throw new BusinessException(ErrorCode.VIDEO_SAVE_FAILED);
