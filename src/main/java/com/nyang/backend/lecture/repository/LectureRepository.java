@@ -1,6 +1,7 @@
 package com.nyang.backend.lecture.repository;
 
 import com.nyang.backend.lecture.entity.Lecture;
+import com.nyang.backend.lecture.entity.SttStatus;
 import com.nyang.backend.lectureClass.entity.LectureClass;
 import com.nyang.backend.user.entity.Users;
 import org.springframework.data.domain.Page;
@@ -90,6 +91,59 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     Page<Lecture> findByTeacherAndIsDeletedFalseAndLectureClass_LectureClassIdAndTitleContainingIgnoreSpace(
             @Param("teacher") Users teacher,
             @Param("lectureClassId") Long lectureClassId,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    // 상세 조회 + STT status
+    Optional<Lecture> findByLectureIdAndIsDeletedFalseAndSttStatus(
+            Long lectureId,
+            SttStatus sttStatus
+    );
+
+    // -------------------------------
+    // STT status별 전체 강의 조회용 추가 메서드
+    // -------------------------------
+
+    // 전체 강의 조회 + status
+    Page<Lecture> findAllByIsDeletedFalseAndSttStatus(
+            SttStatus sttStatus,
+            Pageable pageable
+    );
+
+    // 전체 강의 조회 + 특정 강좌 + status
+    Page<Lecture> findByIsDeletedFalseAndLectureClass_LectureClassIdAndSttStatus(
+            Long lectureClassId,
+            SttStatus sttStatus,
+            Pageable pageable
+    );
+
+    // 공백 무시 제목 검색 + status
+    @Query("""
+        SELECT l
+        FROM Lecture l
+        WHERE l.isDeleted = false
+          AND l.sttStatus = :sttStatus
+          AND REPLACE(l.title, ' ', '') LIKE CONCAT('%', :keyword, '%')
+    """)
+    Page<Lecture> findByIsDeletedFalseAndSttStatusAndTitleContainingIgnoreSpace(
+            @Param("sttStatus") SttStatus sttStatus,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    // 공백 무시 강좌 + 제목 검색 + status
+    @Query("""
+        SELECT l
+        FROM Lecture l
+        WHERE l.isDeleted = false
+          AND l.sttStatus = :sttStatus
+          AND l.lectureClass.lectureClassId = :lectureClassId
+          AND REPLACE(l.title, ' ', '') LIKE CONCAT('%', :keyword, '%')
+    """)
+    Page<Lecture> findByIsDeletedFalseAndLectureClass_LectureClassIdAndSttStatusAndTitleContainingIgnoreSpace(
+            @Param("lectureClassId") Long lectureClassId,
+            @Param("sttStatus") SttStatus sttStatus,
             @Param("keyword") String keyword,
             Pageable pageable
     );

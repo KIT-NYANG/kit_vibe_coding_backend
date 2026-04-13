@@ -7,6 +7,7 @@ import com.nyang.backend.global.exception.ErrorCode;
 import com.nyang.backend.global.response.PageResponseDto;
 import com.nyang.backend.lecture.dto.*;
 import com.nyang.backend.lecture.entity.Lecture;
+import com.nyang.backend.lecture.entity.SttStatus;
 import com.nyang.backend.lecture.event.LectureCreatedEvent;
 import com.nyang.backend.lecture.repository.LectureRepository;
 import com.nyang.backend.lecture.repository.LectureTranscriptSegmentRepository;
@@ -106,23 +107,26 @@ public class LectureServiceImpl implements LectureService {
         Page<Lecture> lecturePage;
 
         // 강좌 필터 + 제목 검색
+        SttStatus targetStatus = SttStatus.COMPLETED;
+
         if (hasLectureClassId && hasKeyword) {
             lecturePage = lectureRepository
-                    .findByIsDeletedFalseAndLectureClass_LectureClassIdAndTitleContainingIgnoreSpace(
-                            lectureClassId, keyword, pageable
+                    .findByIsDeletedFalseAndLectureClass_LectureClassIdAndSttStatusAndTitleContainingIgnoreSpace(
+                            lectureClassId, targetStatus, keyword, pageable
                     );
-        } else if (hasLectureClassId) { // 강좌 필터만 적용
+        } else if (hasLectureClassId) {
             lecturePage = lectureRepository
-                    .findByIsDeletedFalseAndLectureClass_LectureClassId(
-                            lectureClassId, pageable
+                    .findByIsDeletedFalseAndLectureClass_LectureClassIdAndSttStatus(
+                            lectureClassId, targetStatus, pageable
                     );
-        } else if (hasKeyword) { // 제목 검색만 적용
+        } else if (hasKeyword) {
             lecturePage = lectureRepository
-                    .findByIsDeletedFalseAndTitleContainingIgnoreSpace(
-                            keyword, pageable
+                    .findByIsDeletedFalseAndSttStatusAndTitleContainingIgnoreSpace(
+                            targetStatus, keyword, pageable
                     );
-        } else { // 조건 없이 전체 조회
-            lecturePage = lectureRepository.findAllByIsDeletedFalse(pageable);
+        } else {
+            lecturePage = lectureRepository
+                    .findAllByIsDeletedFalseAndSttStatus(targetStatus, pageable);
         }
 
         return PageResponseDto.from(
